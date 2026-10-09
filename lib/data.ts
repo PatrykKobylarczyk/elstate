@@ -106,7 +106,8 @@ export const markets = [
 export const media = {
   heroVideo: undefined as string | undefined, // np. "/video/hero.mp4" (zalecane: 1920×1080, H.264, bez dźwięku, do 8 MB)
   heroPoster: undefined as string | undefined,
-  showreel: undefined as string | undefined, // film w sekcji „Każda nieruchomość ma swój film”
+  showreel: "/video/showreel.mp4" as string | undefined, // film w panelu „Kupujący poznaje dom…” (pionowy 9:16, bez dźwięku)
+  showreelPoster: "/video/showreel.jpg" as string | undefined,
 };
 
 export const values = ["Otwartość", "Kreatywność", "Skuteczność", "Empatia"];

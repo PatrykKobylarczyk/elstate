@@ -150,17 +150,27 @@ export default function Home() {
       {/* FILM / SPACER 3D */}
       <section className="bg-pearl px-3 pt-12 md:px-10 md:pt-20">
         <div className="relative isolate mx-auto h-[85svh] max-w-[91rem] min-h-[32rem] overflow-hidden rounded-[2rem] bg-graphite text-pearl md:rounded-[2.5rem]">
-          {media.showreel ? (
-            <video className="absolute inset-x-0 -top-[15%] -z-10 h-[130%] w-full object-cover" data-parallax="0.15" src={media.showreel} autoPlay muted loop playsInline />
-          ) : (
-            <div className="absolute inset-0 -z-10">
-              <div className="absolute left-1/2 top-1/2 w-[min(1200px,150vw)] -translate-x-1/2 -translate-y-1/2 text-pearl/25" data-parallax="0.18">
-                <FloorPlan rooms={4} area={95} seed="film" className="w-full" gapClass="stroke-graphite" />
-              </div>
+          <div className={`absolute inset-0 -z-10 ${media.showreel ? "hidden md:block" : ""}`}>
+            <div className="absolute left-1/2 top-1/2 w-[min(1200px,150vw)] -translate-x-1/2 -translate-y-1/2 text-pearl/25" data-parallax="0.18">
+              <FloorPlan rooms={4} area={95} seed="film" className="w-full" gapClass="stroke-graphite" />
             </div>
+          </div>
+          {/* Film jest pionowy: na telefonie wypełnia panel, na szerszym ekranie stoi z prawej jak rolka, na tle rzutu */}
+          {media.showreel && (
+            <video
+              className="absolute inset-0 -z-10 h-full w-full object-cover md:inset-auto md:right-14 md:top-[11%] md:z-0 md:h-[78%] md:w-auto md:aspect-[9/16] md:rounded-[1.5rem] md:shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+              data-parallax="0.06"
+              src={media.showreel}
+              poster={media.showreelPoster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
           )}
           <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(42,42,45,0.96),rgba(42,42,45,0.25)_65%)]" />
-          <div className="flex h-full flex-col justify-end p-6 md:p-14">
+          <div className={`flex h-full flex-col justify-end p-6 md:p-14 ${media.showreel ? "md:pr-[min(42%,32rem)]" : ""}`}>
             <p className="eyebrow text-gold-300">film · fotografia · spacer 3D</p>
             <h2 data-reveal className="mt-6 max-w-5xl font-display text-[clamp(2.4rem,5.6vw,6rem)] leading-[0.98]">
               Kupujący poznaje dom, <em className="text-gold-300">zanim przekroczy próg.</em>
