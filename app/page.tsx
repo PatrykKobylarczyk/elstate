@@ -45,7 +45,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10">
+        <div className="relative z-10 mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10">
           <SearchBar />
         </div>
       </section>
