@@ -49,6 +49,8 @@
 
 @layer base {
   html {
+    /* tło płótna (widoczne pod paskami Safari i przy „gumowym” przewijaniu) fioletowe, sama strona beżowa */
+    background-color: var(--color-plum-900);
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
   }

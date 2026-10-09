@@ -109,27 +109,44 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
     document.body.appendChild(cursor);
     const label = cursor.querySelector<HTMLElement>(".cursor-label")!;
     // Kolor kursora zależy od tła pod nim: szukamy pierwszego nieprzezroczystego tła w górę drzewa
-    let lastTarget: Element | null = null;
-    const isDark = (el: Element | null) => {
-      for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
-        const bg = getComputedStyle(n).backgroundColor;
-        const v = (bg.match(/-?[\d.]+/g) || []).map(Number);
-        if (v.length < 3) continue;
-        const alpha = bg.includes("/") || bg.startsWith("rgba") ? v[v.length - 1] : 1;
-        if (alpha < 0.5) continue;
-        // rgb() w 0–255, color(srgb) w 0–1, oklab/oklch zaczyna się od jasności 0–1
-        if (bg.startsWith("okl")) return v[0] < 0.55;
-        const k = bg.startsWith("color(") ? 255 : 1;
-        return (0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]) * k < 140;
+    // Kolor tła liczymy w punkcie kursora, przez wszystkie warstwy: przezroczysty navbar leży nad fioletowym hero,
+    // a nie w nim, więc samo wspinanie się po rodzicach dawało beżowe body i fioletowy kursor na fioletowym tle.
+    const bgDark = (n: Element) => {
+      const bg = getComputedStyle(n).backgroundColor;
+      const v = (bg.match(/-?[\d.]+/g) || []).map(Number);
+      if (v.length < 3) return null;
+      const alpha = bg.includes("/") || bg.startsWith("rgba") ? v[v.length - 1] : 1;
+      if (alpha < 0.5) return null;
+      // rgb() w 0–255, color(srgb) w 0–1, oklab/oklch zaczyna się od jasności 0–1
+      if (bg.startsWith("okl")) return v[0] < 0.55;
+      const k = bg.startsWith("color(") ? 255 : 1;
+      return (0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]) * k < 140;
+    };
+    const isDark = (x: number, y: number) => {
+      for (const n of document.elementsFromPoint(x, y)) {
+        if (n === document.documentElement) break;
+        const d = bgDark(n);
+        if (d !== null) return d;
       }
       return false;
     };
+    let lastTarget: Element | null = null;
+    let recheck = false;
+    const tone = () => cursor!.classList.toggle("on-dark", isDark(tx, ty));
+    // przy przewijaniu tło pod nieruchomym kursorem też się zmienia (np. navbar dostaje beżowe tło)
+    const onScroll = () => {
+      if (recheck) return;
+      recheck = true;
+      requestAnimationFrame(() => ((recheck = false), tone()));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    cleanups.push(() => window.removeEventListener("scroll", onScroll));
     const move = (e: MouseEvent) => {
       tx = e.clientX;
       ty = e.clientY;
       if (e.target !== lastTarget) {
         lastTarget = e.target as Element;
-        cursor!.classList.toggle("on-dark", isDark(lastTarget));
+        tone();
       }
       const t = (e.target as HTMLElement).closest<HTMLElement>("[data-cursor], a, button, input, select, textarea");
       const text = t?.dataset.cursor || "";

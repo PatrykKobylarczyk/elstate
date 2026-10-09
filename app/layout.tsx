@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.elstate.pl"),
   openGraph: { locale: "pl_PL", siteName: "ELSTATE nieruchomości", type: "website" },
 };
+
+// Pasek stanu i pasek adresu na iPhonie mają kolor fioletu, jak hero i stopka
+export const viewport: Viewport = { themeColor: "#320920" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
