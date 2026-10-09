@@ -133,13 +133,12 @@
   transition: opacity 0.25s linear;
 }
 
-/* Hero: panorama odsłania się od lewej */
+/* Hero: panorama pojawia się z przezroczystości do krycia ustawionego w klasie (opacity-70) */
 .skyline {
-  animation: skyline 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.3s both;
+  animation: skyline 2.4s ease-out 0.3s both;
 }
 @keyframes skyline {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0 0 0); }
+  from { opacity: 0; }
 }
 
 /* Rysunek linią: pathLength=1, więc kreska o długości 1 to cała ścieżka */
