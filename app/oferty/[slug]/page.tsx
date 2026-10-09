@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Arrow from "@/components/Arrow";
 import ContactForm from "@/components/ContactForm";
 import FloorPlan from "@/components/FloorPlan";
 import { contact, floorLabel, formatArea, formatPrice, listings, pricePerM2, roomsLabel } from "@/lib/data";
@@ -37,7 +38,7 @@ export default async function Oferta({ params }: Props) {
     <>
       <section className="bg-pearl pt-32 pb-16">
         <div className="mx-auto max-w-7xl px-5 md:px-10">
-          <Link href="/oferty" className="eyebrow text-plum-900 hover:text-plum-700">← Wszystkie oferty</Link>
+          <Link href="/oferty" className="eyebrow text-plum-900 hover:text-plum-700"><Arrow dir="left" /> Wszystkie oferty</Link>
           <div className="mt-8 grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div>
               <p className="eyebrow text-plum-900">{l.district} · {l.city}</p>

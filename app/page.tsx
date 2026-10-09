@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Arrow from "@/components/Arrow";
 import ContactForm from "@/components/ContactForm";
 import FloorPlan from "@/components/FloorPlan";
 import HeroDrawing from "@/components/HeroDrawing";
@@ -39,7 +40,7 @@ export default function Home() {
             Strategia, obraz i negocjacje w jednych rękach. Twoja nieruchomość dostaje własną historię, a Ty spokój.
           </p>
           <div className="mt-10 flex animate-rise flex-wrap gap-3 [animation-delay:300ms]">
-            <Link href="/oferty" className="btn-light" data-cursor="Oferty">Zobacz oferty <span aria-hidden>↗</span></Link>
+            <Link href="/oferty" className="btn-light" data-cursor="Oferty">Zobacz oferty <Arrow /></Link>
             <Link href="/kontakt?temat=wycena" className="btn-ghost text-pearl">Otrzymaj wycenę</Link>
           </div>
         </div>
@@ -108,7 +109,7 @@ export default function Home() {
                 </h2>
                 <p className="mt-6 max-w-sm leading-relaxed text-graphite/65">Od kamienic w Śródmieściu po nowe osiedla. Przewiń, aby zobaczyć kolejne.</p>
               </div>
-              <Link href="/oferty" className="btn-ghost mt-10 self-start">Wszystkie oferty ↗</Link>
+              <Link href="/oferty" className="btn-ghost mt-10 self-start">Wszystkie oferty <Arrow /></Link>
             </div>
             {listings.map((l) => (
               <div key={l.slug} className="w-[80vw] shrink-0 snap-start md:w-[28vw]" data-cursor="Zobacz">
@@ -138,7 +139,7 @@ export default function Home() {
                 <div className="relative grid gap-3 px-1 py-8 transition-colors duration-500 group-hover:text-plum-900 md:grid-cols-[1.1fr_1fr_auto] md:items-center md:gap-10 md:px-6 md:py-10">
                   <h3 className="font-display text-3xl md:text-5xl">{s.title}</h3>
                   <p className="max-w-md leading-relaxed text-pearl/65 transition-colors group-hover:text-graphite/75">{s.text}</p>
-                  <span aria-hidden className="hidden size-12 place-items-center rounded-full border border-current/25 text-xl transition-transform duration-500 group-hover:rotate-45 md:grid">↗</span>
+                  <span aria-hidden className="hidden size-12 place-items-center rounded-full border border-current/25 text-xl transition-transform duration-500 group-hover:rotate-45 md:grid"><Arrow /></span>
                 </div>
               </li>
             ))}
