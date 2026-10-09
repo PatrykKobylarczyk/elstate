@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Intro />
         <Nav />
-        <main className="bg-pearl">{children}</main>
+        <main>{children}</main>
         <Footer />
         <Motion />
       </body>

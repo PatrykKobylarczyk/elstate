@@ -20,7 +20,6 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
   const root = document.documentElement;
   root.classList.add("motion-ready");
   const cleanups: (() => void)[] = [];
-  cleanups.push(edgeTint());
 
   // Słowa: dzielimy tekst na spany raz
   document.querySelectorAll<HTMLElement>("[data-words]").forEach((el) => {
@@ -227,67 +226,3 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
   return () => cleanups.forEach((c) => c());
 }
 
-
-// Paski przeglądarki na telefonie (pasek stanu u góry, pasek adresu na dole) w kolorze sekcji przy danej krawędzi.
-// Safari na iOS 26 bierze kolor z elementów przyklejonych do krawędzi i z tła body; starsze wersje i Chrome z <meta theme-color>.
-// Dlatego przy przewijaniu ustawiamy wszystkie trzy: dwa paski fixed u góry i u dołu, body i meta.
-// Safari bierze pod uwagę tylko pełnej szerokości elementy fixed wyższe niż kilka pikseli i leżące na wierzchu,
-// stąd 12px (tyle, ile navbar ma odstępu od góry) i z-index nad navbarem. Paski rysujemy tylko na iPhonie i iPadzie.
-function edgeTint() {
-  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const make = (edge: "top" | "bottom") => {
-    const el = document.createElement("div");
-    el.setAttribute("aria-hidden", "true");
-    el.style.cssText = `position:fixed;left:0;right:0;${edge}:0;height:12px;z-index:60;pointer-events:none;display:${ios ? "block" : "none"}`;
-    document.body.appendChild(el);
-    return el;
-  };
-  const top = make("top");
-  const bottom = make("bottom");
-  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.name = "theme-color";
-    document.head.appendChild(meta);
-  }
-  // pierwszy nieprzezroczysty kolor tła pod punktem, przez wszystkie warstwy (paski mają pointer-events:none, więc ich nie ma na liście)
-  const colorAt = (y: number) => {
-    for (const n of document.elementsFromPoint(window.innerWidth / 2, y)) {
-      if (n === document.documentElement) break;
-      const bg = getComputedStyle(n).backgroundColor;
-      const v = (bg.match(/-?[\d.]+/g) || []).map(Number);
-      const alpha = bg.includes("/") || bg.startsWith("rgba") ? v[v.length - 1] : 1;
-      if (v.length < 3 || alpha < 0.5) continue;
-      return bg;
-    }
-    return getComputedStyle(document.body).backgroundColor;
-  };
-  let queued = false;
-  const update = () => {
-    queued = false;
-    const t = colorAt(1);
-    const b = colorAt(window.innerHeight - 2);
-    top.style.background = t;
-    bottom.style.background = b;
-    document.body.style.backgroundColor = b;
-    meta!.content = t;
-  };
-  const onScroll = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(update);
-  };
-  update();
-  // po ekranie startowym (components/Intro.tsx) sprawdzamy jeszcze raz, bo wtedy krawędzie zakrywał beż
-  const late = document.documentElement.classList.contains("intro") ? window.setTimeout(update, 3400) : 0;
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  return () => {
-    clearTimeout(late);
-    window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("resize", onScroll);
-    top.remove();
-    bottom.remove();
-    document.body.style.backgroundColor = "";
-  };
-}
