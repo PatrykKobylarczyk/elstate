@@ -8,7 +8,7 @@
 //   data-hscroll          sekcja przypięta; jej [data-track] przesuwa się w poziomie przy przewijaniu w dół
 //   data-progress         linia (scaleY) wypełnia się wraz z przewijaniem rodzica
 //   data-hero-fade        element hero zanika i oddala się przy przewijaniu
-//   data-cursor="Zobacz"  etykieta kursora nad elementem
+//   data-cursor="Zobacz"  etykieta kursora nad elementem (linki tel: i mailto: mają „Zadzwoń” i „Napisz” same)
 //   data-count="9"        licznik od zera do wartości przy pierwszym pojawieniu się
 
 type LenisLike = { raf(t: number): void; destroy(): void; on(e: string, cb: () => void): void };
@@ -154,7 +154,9 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
         tone();
       }
       const t = (e.target as HTMLElement).closest<HTMLElement>("[data-cursor], a, button, input, select, textarea");
-      const text = t?.dataset.cursor || "";
+      // telefony i maile w całej stronie dostają etykietę same, bez data-cursor
+      const href = t?.getAttribute("href") || "";
+      const text = t?.dataset.cursor || (href.startsWith("tel:") ? "Zadzwoń" : href.startsWith("mailto:") ? "Napisz" : "");
       cursor!.classList.toggle("is-link", Boolean(t) && !text);
       cursor!.classList.toggle("is-label", Boolean(text));
       label.textContent = text;

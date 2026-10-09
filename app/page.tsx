@@ -254,8 +254,8 @@ export default function Home() {
                 <p className="mt-1 text-graphite/60">{m.role}</p>
                 <p className="mt-4 max-w-md leading-relaxed text-graphite/75">{m.bio}</p>
                 <p className="mt-4 flex flex-wrap gap-2 text-sm tabular-nums">
-                  <a href={`tel:${m.phone.replace(/\s/g, "")}`} data-cursor="Zadzwoń" className="rounded-full border border-graphite/15 px-4 py-2 hover:border-plum-900">{m.phone}</a>
-                  <a href={`mailto:${m.email}`} data-cursor="Napisz" className="rounded-full border border-graphite/15 px-4 py-2 hover:border-plum-900">{m.email}</a>
+                  <a href={`tel:${m.phone.replace(/\s/g, "")}`} className="rounded-full border border-graphite/15 px-4 py-2 hover:border-plum-900">{m.phone}</a>
+                  <a href={`mailto:${m.email}`} className="rounded-full border border-graphite/15 px-4 py-2 hover:border-plum-900">{m.email}</a>
                 </p>
               </article>
             ))}
