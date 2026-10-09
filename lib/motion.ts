@@ -230,12 +230,15 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
 
 // Paski przeglądarki na telefonie (pasek stanu u góry, pasek adresu na dole) w kolorze sekcji przy danej krawędzi.
 // Safari na iOS 26 bierze kolor z elementów przyklejonych do krawędzi i z tła body; starsze wersje i Chrome z <meta theme-color>.
-// Dlatego przy przewijaniu ustawiamy wszystkie trzy: dwa cienkie paski fixed u góry i u dołu, body i meta.
+// Dlatego przy przewijaniu ustawiamy wszystkie trzy: dwa paski fixed u góry i u dołu, body i meta.
+// Safari bierze pod uwagę tylko pełnej szerokości elementy fixed wyższe niż kilka pikseli i leżące na wierzchu,
+// stąd 12px (tyle, ile navbar ma odstępu od góry) i z-index nad navbarem. Paski rysujemy tylko na iPhonie i iPadzie.
 function edgeTint() {
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const make = (edge: "top" | "bottom") => {
     const el = document.createElement("div");
     el.setAttribute("aria-hidden", "true");
-    el.style.cssText = `position:fixed;left:0;right:0;${edge}:0;height:2px;z-index:40;pointer-events:none`;
+    el.style.cssText = `position:fixed;left:0;right:0;${edge}:0;height:12px;z-index:60;pointer-events:none;display:${ios ? "block" : "none"}`;
     document.body.appendChild(el);
     return el;
   };
