@@ -80,7 +80,7 @@ export default function Nav() {
       {open && (
         <div className="mx-auto mt-2 max-w-[96rem] rounded-[1.75rem] bg-pearl px-6 pt-6 pb-10 shadow-[0_8px_30px_rgba(42,42,45,0.08)] lg:hidden">
           <ul className="flex flex-col">
-            {[...links, { href: "/kontakt", label: "Kontakt" }].map((l) => (
+            {links.map((l) => (
               <li key={l.href} className="border-b border-graphite/10 last:border-b-0">
                 <Link href={l.href} onClick={() => setOpen(false)} className="block py-5 font-display text-3xl text-plum-900">
                   {l.label}

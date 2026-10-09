@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { topics, type Topic } from "@/lib/contactTopics";
 
-export default function ContactForm({ subject }: { subject?: string }) {
+// heading={false}, gdy strona ma własny nagłówek nad formularzem (karta oferty); subject nadpisuje temat wiadomości
+export default function ContactForm({ topic = "kontakt", subject = topics[topic].subject, heading = true }: { topic?: Topic; subject?: string; heading?: boolean }) {
+  const { title, lead, placeholder } = topics[topic];
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -31,6 +34,13 @@ export default function ContactForm({ subject }: { subject?: string }) {
   }
 
   return (
+    <>
+    {heading && (
+      <div className="mb-8">
+        <p className="font-display text-3xl">{title}</p>
+        {lead && <p className="mt-3 text-sm leading-relaxed text-current/60">{lead}</p>}
+      </div>
+    )}
     <form onSubmit={onSubmit} className="grid gap-6 sm:grid-cols-2">
       <label className="sm:col-span-1">
         <span className="sr-only">Imię i nazwisko</span>
@@ -42,7 +52,7 @@ export default function ContactForm({ subject }: { subject?: string }) {
       </label>
       <label className="sm:col-span-2">
         <span className="sr-only">Wiadomość</span>
-        <textarea id="contact-message" name="message" rows={4} required placeholder="Napisz, w czym możemy pomóc" className="field resize-none" defaultValue={subject ? `Dzień dobry, interesuje mnie oferta: ${subject}.` : ""} />
+        <textarea id="contact-message" name="message" rows={4} required placeholder={placeholder} className="field resize-none" />
       </label>
       <label className="flex items-start gap-3 text-xs leading-relaxed text-current/60 sm:col-span-2">
         <input id="contact-consent" type="checkbox" name="consent" required className="mt-0.5 accent-plum-900" />
@@ -55,5 +65,6 @@ export default function ContactForm({ subject }: { subject?: string }) {
         {state === "error" && <p className="text-sm">Nie udało się wysłać. Zadzwoń lub napisz na info@elstate.pl.</p>}
       </div>
     </form>
+    </>
   );
 }

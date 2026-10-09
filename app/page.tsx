@@ -289,8 +289,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="rounded-[1.75rem] bg-pearl p-6 text-graphite md:p-10">
-            <p className="mb-8 font-display text-3xl">Otrzymaj wycenę</p>
-            <ContactForm />
+            <ContactForm topic="wycena" />
           </div>
         </div>
       </section>

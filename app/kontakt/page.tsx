@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
+import { toTopic } from "@/lib/contactTopics";
 import { contact } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Kontakt" };
-
-const topics: Record<string, string> = { wycena: "Wycena nieruchomości", kredyt: "Konsultacja z doradcą kredytowym" };
 
 export default async function Kontakt({ searchParams }: { searchParams: Promise<{ temat?: string }> }) {
   const { temat } = await searchParams;
@@ -24,8 +23,8 @@ export default async function Kontakt({ searchParams }: { searchParams: Promise<
           </dl>
         </div>
         <div className="lg:pt-24">
-          <p className="mb-8 font-display text-3xl">Formularz kontaktowy</p>
-          <ContactForm subject={temat ? topics[temat] : undefined} />
+          {/* key: nowy temat z navbaru (ta sama strona, inny ?temat) czyści formularz */}
+          <ContactForm key={toTopic(temat)} topic={toTopic(temat)} />
         </div>
       </div>
     </section>

@@ -69,7 +69,7 @@ export default async function Oferta({ params }: Props) {
             <p className="eyebrow text-plum-900">zapytaj o ofertę</p>
             <p className="mt-3 font-display text-3xl">Umówmy prezentację</p>
             <p className="mt-2 mb-8 text-sm text-graphite/60">lub zadzwoń: <a href={contact.phoneHref} className="text-plum-900">{contact.phone}</a></p>
-            <ContactForm subject={l.title} />
+            <ContactForm topic="oferta" subject={`Prezentacja: ${l.title}`} heading={false} />
           </div>
         </div>
       </section>
