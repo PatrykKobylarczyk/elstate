@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Motion from "@/components/Motion";
+import Intro, { introScript } from "@/components/Intro";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin", "latin-ext"], variable: "--font-manrope", display: "swap" });
@@ -17,8 +18,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={manrope.variable}>
+    <html lang="pl" className={manrope.variable} suppressHydrationWarning>
+      <head>
+        <script id="intro-js" dangerouslySetInnerHTML={{ __html: introScript }} />
+      </head>
       <body>
+        <Intro />
         <Nav />
         <main>{children}</main>
         <Footer />

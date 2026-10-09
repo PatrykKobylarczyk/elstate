@@ -224,3 +224,19 @@ html:not(.motion-ready) [data-hscroll] [data-track] {
 
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+/* ---------- Ekran startowy (components/Intro.tsx) ---------- */
+html.intro { overflow: hidden; }
+html.intro .intro-screen {
+  display: flex;
+  animation: intro-out 0.9s cubic-bezier(0.76, 0, 0.24, 1) 2s forwards;
+}
+.intro-logo { animation: intro-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.intro-dot { animation: intro-dot 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s both; }
+.intro-sub { animation: intro-sub 1s cubic-bezier(0.16, 1, 0.3, 1) 1s both; }
+/* hero czeka, aż kurtyna zjedzie */
+html.intro .animate-rise, html.intro .skyline { animation-play-state: paused; }
+@keyframes intro-rise { from { opacity: 0; transform: translateY(40px); clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 -20% 0); } }
+@keyframes intro-dot { from { opacity: 0; transform: scale(0); } }
+@keyframes intro-sub { from { opacity: 0; letter-spacing: 0.9em; } }
+@keyframes intro-out { to { transform: translateY(100%); } }
