@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 import Wordmark from "./Wordmark";
 
 const links = [
+  { href: "/#o-nas", label: "O nas" },
   { href: "/oferty", label: "Oferty" },
   { href: "/#uslugi", label: "Usługi" },
   { href: "/#proces", label: "Proces" },
   { href: "/#finanse", label: "Finanse" },
-  { href: "/#o-nas", label: "O nas" },
+  { href: "/kontakt", label: "Kontakt" },
 ];
 
 export default function Nav() {

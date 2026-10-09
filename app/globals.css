@@ -55,7 +55,8 @@
     scroll-padding-top: 5rem;
   }
   body {
-    @apply bg-pearl font-sans text-graphite antialiased;
+    /* Safari na iPhonie barwi pasek stanu i pasek adresu kolorem tła body, więc body jest fioletowe, a beżowa jest sama treść (<main>) */
+    @apply bg-plum-900 font-sans text-graphite antialiased;
   }
   h1, h2, h3 {
     text-wrap: balance;
