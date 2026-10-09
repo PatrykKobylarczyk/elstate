@@ -99,9 +99,9 @@ export default function Home() {
 
       {/* OFERTY: przypięta sekcja przewijana w poziomie */}
       <section id="oferty" data-hscroll className="relative bg-mist">
-        <div className="top-0 flex flex-col justify-center overflow-hidden py-24 md:sticky md:h-screen md:py-0">
-          <div data-track className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-5 pb-4 will-change-transform md:w-max md:overflow-visible md:px-10 md:pb-0">
-            <div className="flex w-[80vw] shrink-0 snap-start flex-col justify-between md:w-[30vw]">
+        <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden md:h-screen">
+          <div data-track className="flex w-max gap-4 px-5 will-change-transform md:gap-6 md:px-10">
+            <div className="flex w-[78vw] shrink-0 flex-col justify-between md:w-[30vw]">
               <div>
                 <p className="eyebrow text-plum-900">oferty</p>
                 <h2 className="mt-6 font-display text-[clamp(2.6rem,5vw,5.5rem)] leading-[0.95] text-graphite">
@@ -112,7 +112,7 @@ export default function Home() {
               <Link href="/oferty" className="btn-ghost mt-10 self-start">Wszystkie oferty <Arrow /></Link>
             </div>
             {listings.map((l) => (
-              <div key={l.slug} className="w-[80vw] shrink-0 snap-start md:w-[28vw]" data-cursor="Zobacz">
+              <div key={l.slug} className="w-[78vw] shrink-0 md:w-[28vw]" data-cursor="Zobacz">
                 <ListingCard listing={l} />
               </div>
             ))}

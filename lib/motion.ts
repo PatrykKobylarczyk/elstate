@@ -5,7 +5,7 @@
 //   data-depth="20"       przesunięcie za kursorem myszy (px), np. warstwy w hero
 //   data-reveal           wjazd elementu przy pojawieniu się w kadrze (treść jest widoczna od początku)
 //   data-words            słowa rozjaśniają się w miarę przewijania sekcji
-//   data-hscroll          sekcja przypięta; jej [data-track] przesuwa się w poziomie (od 768 px)
+//   data-hscroll          sekcja przypięta; jej [data-track] przesuwa się w poziomie przy przewijaniu w dół
 //   data-progress         linia (scaleY) wypełnia się wraz z przewijaniem rodzica
 //   data-hero-fade        element hero zanika i oddala się przy przewijaniu
 //   data-cursor="Zobacz"  etykieta kursora nad elementem
@@ -60,6 +60,8 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
 
   if (reduce) {
     document.querySelectorAll("[data-reveal]").forEach((el) => el.classList.add("is-in"));
+    // bez animacji tor ofert przewija się zwyczajnie, palcem lub kółkiem
+    document.querySelectorAll<HTMLElement>("[data-hscroll] [data-track]").forEach((t) => (t.parentElement!.style.overflowX = "auto"));
     document.querySelectorAll<HTMLElement>("[data-words] .word").forEach((w) => (w.style.opacity = "1"));
     return () => cleanups.forEach((c) => c());
   }
@@ -83,11 +85,6 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
     hscroll.forEach((s) => {
       const track = s.querySelector<HTMLElement>("[data-track]");
       if (!track) return;
-      if (window.innerWidth < 768) {
-        s.style.height = "";
-        track.style.transform = "";
-        return;
-      }
       s.style.height = `${track.scrollWidth - window.innerWidth + window.innerHeight}px`;
     });
   sizeH();
@@ -185,7 +182,7 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
 
     for (const s of hscroll) {
       const track = s.querySelector<HTMLElement>("[data-track]");
-      if (!track || window.innerWidth < 768) continue;
+      if (!track) continue;
       const r = s.getBoundingClientRect();
       const max = track.scrollWidth - window.innerWidth;
       const p = Math.min(1, Math.max(0, -r.top / (r.height - vh)));

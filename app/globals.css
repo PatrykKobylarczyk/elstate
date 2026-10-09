@@ -146,6 +146,12 @@
   stroke-dasharray: 1;
 }
 
+/* Bez JS tor ofert przewija się zwyczajnie w poziomie */
+html:not(.motion-ready) [data-hscroll] [data-track] {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 [data-progress] {
   transform-origin: top;
   transform: scaleY(0);
