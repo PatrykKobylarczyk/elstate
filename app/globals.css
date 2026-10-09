@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+/*
+  PALETA MARKI — jedyne miejsce, w którym zmieniasz kolory.
+  Paleta: Fiolet #320920 · Grafit #2A2A2D · Złoto #C19A5B · Beż #F9F5EF.
+  Pozostałe odcienie to jaśniejsze/ciemniejsze warianty tych czterech barw.
+  Po podmianie tych zmiennych cała strona przyjmie nową paletę.
+*/
+@theme {
+  --color-plum-950: #1d0412;
+  --color-plum-900: #320920; /* Fiolet */
+  --color-plum-800: #47142f;
+  --color-plum-700: #5e2341;
+  --color-plum-600: #7a3a5a;
+
+  --color-gold-200: #eadbc0;
+  --color-gold-300: #dcc193;
+  --color-gold-400: #cdac74;
+  --color-gold-500: #c19a5b; /* Złoto */
+  --color-gold-600: #a37f45;
+
+  --color-graphite: #2a2a2d; /* Grafit */
+  --color-graphite-950: #1c1c1f;
+
+  --color-pearl: #f9f5ef; /* Tło, beż */
+  --color-mist: #efe8dd;
+  --color-sand: #e6ddcf;
+
+  --font-display: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+
+  --animate-draw: draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+  --animate-wipe: wipe 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+  --animate-rise: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes wipe {
+    from { clip-path: inset(0 0 100% 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  @keyframes rise {
+    from { opacity: 0.001; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-pearl font-sans text-graphite antialiased;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  /* Nagłówki: spokojny, ciasno składany krój; wyróżnienia lżejsze */
+  .font-display {
+    font-weight: 500;
+    letter-spacing: -0.045em;
+  }
+  .font-display em {
+    font-style: normal;
+    font-weight: 300;
+  }
+  ::selection {
+    @apply bg-gold-500 text-plum-950;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-gold-400;
+  }
+}
+
+@layer components {
+  /* Etykiety sekcji: wersaliki w lekkim kroju, z cienką złotą kreską */
+  .eyebrow {
+    @apply inline-flex items-center gap-4 text-xs font-light uppercase tracking-[0.2em] md:gap-5 md:text-sm;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply inline-block h-px w-8 shrink-0 bg-gold-500;
+  }
+  .hairline {
+    @apply h-px w-full bg-current opacity-20;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-3 rounded-full bg-plum-900 px-7 py-4 text-sm font-medium text-pearl transition-colors hover:bg-plum-700;
+  }
+  .btn-light {
+    @apply inline-flex items-center gap-3 rounded-full bg-pearl px-7 py-4 text-sm font-medium text-plum-900 transition-colors hover:bg-white;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-3 rounded-full border border-current/30 px-7 py-4 text-sm font-medium transition-colors hover:border-current;
+  }
+  .field {
+    @apply w-full border-b border-current/25 bg-transparent py-3 text-base outline-none transition-colors placeholder:text-current/40 focus:border-plum-900;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- Ruch (lib/motion.ts) ---------- */
+
+/* Odsłanianie: treść jest widoczna od początku, wjeżdża tylko ruchem */
+.motion-ready [data-reveal] {
+  transform: translateY(48px);
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.motion-ready [data-reveal].is-in {
+  transform: none;
+}
+.motion-ready [data-reveal="clip"] {
+  transform: none;
+  clip-path: inset(12% 6% 12% 6%);
+  transition: clip-path 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.motion-ready [data-reveal="clip"].is-in {
+  clip-path: inset(0 0 0 0);
+}
+
+[data-words] .word {
+  transition: opacity 0.25s linear;
+}
+
+/* Hero: panorama odsłania się od lewej */
+.skyline {
+  animation: skyline 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.3s both;
+}
+@keyframes skyline {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Rysunek linią: pathLength=1, więc kreska o długości 1 to cała ścieżka */
+.animate-draw {
+  stroke-dasharray: 1;
+}
+
+[data-progress] {
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+/* Taśma z hasłami */
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+.marquee-host:hover .marquee {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Kursor (tylko myszka) */
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+.cursor::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--color-plum-900);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Na ciemnym tle kursor jaśnieje */
+.cursor.on-dark::before {
+  background: var(--color-pearl);
+}
+.cursor.on-dark .cursor-label {
+  color: var(--color-plum-900);
+}
+.cursor.is-link::before {
+  transform: scale(3.2);
+  opacity: 0.25;
+}
+.cursor.is-label::before {
+  transform: scale(8);
+  opacity: 1;
+}
+.cursor-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-pearl);
+  white-space: nowrap;
+}
+@media (pointer: fine) {
+  .motion-ready body, .motion-ready a, .motion-ready button { cursor: none; }
+}
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
