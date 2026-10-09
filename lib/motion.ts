@@ -70,7 +70,12 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
   let lenis: LenisLike | null = null;
   if (opts.Lenis) {
     lenis = new opts.Lenis({ lerp: 0.09, smoothWheel: true });
-    cleanups.push(() => lenis?.destroy());
+    // dostępny dla przewijania z kodu (np. ponowne kliknięcie „Kontakt” w components/Nav.tsx)
+    (window as unknown as { lenis?: LenisLike }).lenis = lenis;
+    cleanups.push(() => {
+      lenis?.destroy();
+      delete (window as unknown as { lenis?: LenisLike }).lenis;
+    });
   }
 
   const parallax = [...document.querySelectorAll<HTMLElement>("[data-parallax]")];

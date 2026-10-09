@@ -29,4 +29,15 @@ export const topics = {
 
 export type Topic = keyof typeof topics;
 
+// Przyciski „Kontakt”, „Otrzymaj wycenę”, „Umów konsultację” prowadzą do formularza na dole strony głównej (/#kontakt)
+// i mają data-topic. Kliknięcie zapisuje temat (przeżyje przejście z podstrony) i ogłasza go formularzowi.
+export const TOPIC_KEY = "elstate-topic";
+export const TOPIC_EVENT = "elstate-topic";
+export function pickTopic(t: string) {
+  try {
+    sessionStorage.setItem(TOPIC_KEY, t);
+  } catch {}
+  window.dispatchEvent(new CustomEvent(TOPIC_EVENT, { detail: t }));
+}
+
 export const toTopic = (t?: string): Topic => (t && t in topics ? (t as Topic) : "kontakt");

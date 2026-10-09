@@ -1,11 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { topics, type Topic } from "@/lib/contactTopics";
+import { useEffect, useState } from "react";
+import { TOPIC_EVENT, TOPIC_KEY, toTopic, topics, type Topic } from "@/lib/contactTopics";
 
-// heading={false}, gdy strona ma własny nagłówek nad formularzem (karta oferty); subject nadpisuje temat wiadomości
-export default function ContactForm({ topic = "kontakt", subject = topics[topic].subject, heading = true }: { topic?: Topic; subject?: string; heading?: boolean }) {
+// heading={false}, gdy strona ma własny nagłówek nad formularzem (karta oferty); subject nadpisuje temat wiadomości.
+// live: formularz na stronie głównej zmienia temat po kliknięciu przycisku z data-topic (lib/contactTopics.ts).
+export default function ContactForm({ topic: initial = "kontakt", subject: subjectOverride, heading = true, live = false }: { topic?: Topic; subject?: string; heading?: boolean; live?: boolean }) {
+  const [topic, setTopic] = useState<Topic>(initial);
   const { title, lead, placeholder } = topics[topic];
+  const subject = subjectOverride ?? topics[topic].subject;
+
+  useEffect(() => {
+    if (!live) return;
+    const take = (t?: string | null) => {
+      if (!t) return;
+      setTopic(toTopic(t));
+      try {
+        sessionStorage.removeItem(TOPIC_KEY);
+      } catch {}
+    };
+    // temat wybrany na innej podstronie, zanim przeszliśmy tutaj
+    try {
+      take(sessionStorage.getItem(TOPIC_KEY));
+    } catch {}
+    const onPick = (e: Event) => take((e as CustomEvent<string>).detail);
+    window.addEventListener(TOPIC_EVENT, onPick);
+    return () => window.removeEventListener(TOPIC_EVENT, onPick);
+  }, [live]);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -37,7 +58,7 @@ export default function ContactForm({ topic = "kontakt", subject = topics[topic]
     <>
     {heading && (
       <div className="mb-8">
-        <p className="font-display text-3xl">{title}</p>
+        <p key={title} className="animate-rise font-display text-3xl">{title}</p>
         {lead && <p className="mt-3 text-sm leading-relaxed text-current/60">{lead}</p>}
       </div>
     )}

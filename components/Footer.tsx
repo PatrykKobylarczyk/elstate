@@ -25,7 +25,7 @@ export default function Footer() {
             <li><Link href="/oferty" className="hover:text-gold-300">Oferty</Link></li>
             <li><Link href="/#uslugi" className="hover:text-gold-300">Usługi</Link></li>
             <li><Link href="/#finanse" className="hover:text-gold-300">Finanse</Link></li>
-            <li><Link href="/kontakt" className="hover:text-gold-300">Kontakt</Link></li>
+            <li><Link href="/#kontakt" data-topic="kontakt" className="hover:text-gold-300">Kontakt</Link></li>
             <li><a href={contact.instagram} target="_blank" rel="noreferrer" className="hover:text-gold-300">Instagram</a></li>
           </ul>
         </div>

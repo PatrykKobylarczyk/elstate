@@ -79,7 +79,7 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<S
             <div className="mt-8 border border-graphite/15 p-10">
               <p className="font-display text-3xl">Brak ofert dla tych filtrów.</p>
               <p className="mt-3 text-graphite/70">Zostaw nam kontakt, a powiadomimy Cię, gdy pojawi się coś dla Ciebie.</p>
-              <Link href="/kontakt" className="btn-primary mt-6">Napisz do nas</Link>
+              <Link href="/#kontakt" data-topic="kontakt" className="btn-primary mt-6">Napisz do nas</Link>
             </div>
           )}
         </div>

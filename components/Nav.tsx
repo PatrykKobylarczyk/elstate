@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Wordmark from "./Wordmark";
+import { pickTopic } from "@/lib/contactTopics";
 
 const links = [
   { href: "/#o-nas", label: "O nas" },
@@ -11,13 +12,33 @@ const links = [
   { href: "/#uslugi", label: "Usługi" },
   { href: "/#proces", label: "Proces" },
   { href: "/#finanse", label: "Finanse" },
-  { href: "/kontakt", label: "Kontakt" },
+  { href: "/#kontakt", label: "Kontakt", topic: "kontakt" },
 ];
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+
+  // Każdy link z data-topic (navbar, hero, finanse, stopka) ustawia nagłówek formularza na dole strony głównej
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element).closest<HTMLAnchorElement>("a[data-topic]");
+      if (!el) return;
+      pickTopic(el.dataset.topic!);
+      // ten sam adres /#kontakt drugi raz nie przewija, więc przewijamy sami
+      if (location.pathname === "/" && location.hash === el.hash) {
+        e.preventDefault();
+        setOpen(false);
+        const target = document.querySelector<HTMLElement>(el.hash);
+        const lenis = (window as unknown as { lenis?: { scrollTo(t: HTMLElement, o?: { offset?: number }): void } }).lenis;
+        if (target && lenis) lenis.scrollTo(target, { offset: -80 });
+        else target?.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -46,6 +67,7 @@ export default function Nav() {
             <li key={l.href}>
               <Link
                 href={l.href}
+                data-topic={l.topic}
                 className={`rounded-full px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
                   onDark ? "text-pearl hover:bg-pearl/10" : "text-graphite hover:bg-plum-900/5 hover:text-plum-900"
                 }`}
@@ -57,7 +79,8 @@ export default function Nav() {
         </ul>
 
         <Link
-          href="/kontakt?temat=wycena"
+          href="/#kontakt"
+          data-topic="wycena"
           className={`hidden h-14 items-center rounded-full px-12 text-[0.95rem] font-semibold transition-colors lg:inline-flex ${
             onDark ? "bg-pearl text-plum-900 hover:bg-white" : "bg-plum-900 text-pearl hover:bg-plum-700"
           }`}
@@ -82,7 +105,7 @@ export default function Nav() {
           <ul className="flex flex-col">
             {links.map((l) => (
               <li key={l.href} className="border-b border-graphite/10 last:border-b-0">
-                <Link href={l.href} onClick={() => setOpen(false)} className="block py-5 font-display text-3xl text-plum-900">
+                <Link href={l.href} data-topic={l.topic} onClick={() => setOpen(false)} className="block py-5 font-display text-3xl text-plum-900">
                   {l.label}
                 </Link>
               </li>

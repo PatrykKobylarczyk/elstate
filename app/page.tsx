@@ -41,7 +41,7 @@ export default function Home() {
           </p>
           <div className="mt-10 flex animate-rise flex-wrap gap-3 [animation-delay:300ms]">
             <Link href="/oferty" className="btn-light" data-cursor="Oferty">Zobacz oferty <Arrow /></Link>
-            <Link href="/kontakt?temat=wycena" className="btn-ghost text-pearl">Otrzymaj wycenę</Link>
+            <Link href="/#kontakt" data-topic="wycena" className="btn-ghost text-pearl">Otrzymaj wycenę</Link>
           </div>
         </div>
 
@@ -227,7 +227,7 @@ export default function Home() {
               Kredyt bez <em className="text-plum-900">zgadywania.</em>
             </h2>
             <p className="mt-6 max-w-md leading-relaxed text-graphite/65">Sprawdź orientacyjną ratę. Umówimy Cię z doradcą kredytowym, który znajdzie najlepszą ofertę.</p>
-            <Link href="/kontakt?temat=kredyt" className="btn-primary mt-10">Umów konsultację</Link>
+            <Link href="/#kontakt" data-topic="kredyt" className="btn-primary mt-10">Umów konsultację</Link>
           </div>
           <MortgageCalculator initialPrice={featured.price} />
         </div>
@@ -289,7 +289,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="rounded-[1.75rem] bg-pearl p-6 text-graphite md:p-10">
-            <ContactForm topic="wycena" />
+            <ContactForm topic="wycena" live />
           </div>
         </div>
       </section>
