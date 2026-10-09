@@ -67,7 +67,7 @@ export default function Home() {
       </section>
 
       {/* O NAS */}
-      <section id="o-nas" className="bg-pearl py-28 md:py-44">
+      <section id="o-nas" className="bg-pearl py-36 md:py-60">
         <div className="mx-auto max-w-[96rem] px-5 md:px-10">
           <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
             <p className="eyebrow text-plum-900">o nas</p>
@@ -148,8 +148,8 @@ export default function Home() {
       </section>
 
       {/* FILM / SPACER 3D */}
-      <section className="bg-pearl p-3 md:p-4">
-        <div className="relative isolate h-[85svh] min-h-[32rem] overflow-hidden rounded-[2rem] bg-graphite text-pearl md:rounded-[2.5rem]">
+      <section className="bg-pearl px-3 pt-12 md:px-10 md:pt-20">
+        <div className="relative isolate mx-auto h-[85svh] max-w-[91rem] min-h-[32rem] overflow-hidden rounded-[2rem] bg-graphite text-pearl md:rounded-[2.5rem]">
           {media.showreel ? (
             <video className="absolute inset-x-0 -top-[15%] -z-10 h-[130%] w-full object-cover" data-parallax="0.15" src={media.showreel} autoPlay muted loop playsInline />
           ) : (
@@ -171,7 +171,7 @@ export default function Home() {
       </section>
 
       {/* PROCES — kolejność ma znaczenie, stąd numeracja */}
-      <section id="proces" className="bg-pearl py-28 md:py-40">
+      <section id="proces" className="bg-pearl py-36 md:py-56">
         <div className="mx-auto grid max-w-[96rem] gap-16 px-5 md:px-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="lg:sticky lg:top-32 lg:self-start">
             <p className="eyebrow text-plum-900">proces</p>
@@ -219,7 +219,7 @@ export default function Home() {
       </section>
 
       {/* FINANSE */}
-      <section id="finanse" className="bg-mist py-28 md:py-40">
+      <section id="finanse" className="bg-mist py-36 md:py-56">
         <div className="mx-auto grid max-w-[96rem] gap-12 px-5 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
             <p className="eyebrow text-plum-900">finanse</p>
@@ -234,7 +234,7 @@ export default function Home() {
       </section>
 
       {/* ZESPÓŁ */}
-      <section id="zespol" className="bg-pearl py-28 md:py-40">
+      <section id="zespol" className="bg-pearl py-36 md:py-56">
         <div className="mx-auto max-w-[96rem] px-5 md:px-10">
           <p className="eyebrow text-plum-900">zespół</p>
           <h2 className="mt-6 font-display text-[clamp(2.4rem,4.8vw,5rem)] leading-[0.98]">Poznajmy się.</h2>
