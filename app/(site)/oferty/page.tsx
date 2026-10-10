@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ListingCard from "@/components/ListingCard";
-import { categories, listings } from "@/lib/data";
+import { categories } from "@/lib/data";
+import { districtsOf, getListings } from "@/lib/listings";
 
 export const metadata: Metadata = { title: "Oferty" };
 
@@ -29,7 +30,8 @@ function Chip({ active, to, children }: { active: boolean; to: string; children:
 
 export default async function Oferty({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
-  const districts = [...new Set(listings.map((l) => l.district))].sort((a, b) => a.localeCompare(b, "pl"));
+  const listings = await getListings();
+  const districts = districtsOf(listings);
   const results = listings.filter(
     (l) =>
       (!sp.transakcja || l.deal === sp.transakcja) &&

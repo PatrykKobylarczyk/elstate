@@ -7,8 +7,9 @@ import HeroDrawing from "@/components/HeroDrawing";
 import ListingCard from "@/components/ListingCard";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import SearchBar from "@/components/SearchBar";
+import { districtsOf, getListings } from "@/lib/listings";
 import { visitorRegion } from "@/lib/region";
-import { contact, formatArea, formatPrice, listings, markets, marquee, media, process, roomsLabel, services, team, values } from "@/lib/data";
+import { contact, formatArea, formatPrice, markets, marquee, media, process, roomsLabel, services, team, values } from "@/lib/data";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).join("");
@@ -16,6 +17,7 @@ function initials(name: string) {
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ panorama?: string }> }) {
   const region = await visitorRegion((await searchParams).panorama);
+  const listings = await getListings();
   const featured = listings.find((l) => l.featured) ?? listings[0];
   const stats = [
     { value: listings.length, label: "aktualnych ofert" },
@@ -48,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10">
-          <SearchBar />
+          <SearchBar districts={districtsOf(listings)} />
         </div>
       </section>
 

@@ -1,9 +1,7 @@
-import { categories, listings } from "@/lib/data";
-
-const districts = [...new Set(listings.map((l) => l.district))].sort((a, b) => a.localeCompare(b, "pl"));
+import { categories } from "@/lib/data";
 
 // Zwykły formularz GET: działa bez JavaScriptu i prowadzi do /oferty z filtrami w adresie.
-export default function SearchBar() {
+export default function SearchBar({ districts }: { districts: string[] }) {
   return (
     <form action="/oferty" className="grid gap-1 rounded-[1.75rem] border border-graphite/10 bg-pearl p-2.5 lg:rounded-full shadow-[0_20px_60px_rgba(29,4,18,0.25)] sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
       <label className="flex flex-col gap-1 rounded-[1.4rem] px-6 py-4 transition-colors lg:rounded-full lg:px-9 hover:bg-graphite/[0.04]">

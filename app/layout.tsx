@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import Motion from "@/components/Motion";
-import Intro, { introScript } from "@/components/Intro";
+import { introScript } from "@/components/Intro";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin", "latin-ext"], variable: "--font-manrope", display: "swap" });
@@ -25,13 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script id="intro-js" dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
-      <body>
-        <Intro />
-        <Nav />
-        <main>{children}</main>
-        <Footer />
-        <Motion />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -2,7 +2,7 @@
 // Pokazuje się tylko przy pierwszym wejściu w danej wizycie (sessionStorage). Skrypt w <head> ustawia klasę `intro`
 // na <html> przed pierwszym malowaniem, więc nie ma mignięcia strony; animacje hero czekają (globals.css) do jej zdjęcia.
 
-export const introScript = `(function(){try{var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var s=null;try{s=sessionStorage}catch(e){}if(s&&s.getItem("elstate-intro"))return;if(s)s.setItem("elstate-intro","1");d.classList.add("intro");setTimeout(function(){d.classList.remove("intro")},3700)}catch(e){}})();`;
+export const introScript = `(function(){try{var d=document.documentElement;if(location.pathname.indexOf("/crm")===0||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var s=null;try{s=sessionStorage}catch(e){}if(s&&s.getItem("elstate-intro"))return;if(s)s.setItem("elstate-intro","1");d.classList.add("intro");setTimeout(function(){d.classList.remove("intro")},3700)}catch(e){}})();`;
 
 export default function Intro() {
   return (

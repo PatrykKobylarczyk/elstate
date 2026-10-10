@@ -1,6 +1,6 @@
 // Treści przeniesione z dotychczasowej strony elstate.pl.
 
-export type Category = "mieszkania" | "domy" | "dzialki";
+export type Category = "mieszkania" | "domy" | "dzialki" | "lokale";
 export type Deal = "sprzedaz" | "wynajem";
 
 export type Listing = {
@@ -17,8 +17,16 @@ export type Listing = {
   year?: number;
   image?: string; // np. "/oferty/stylowy-apartament.jpg"; bez zdjęcia pokazujemy rzut
   featured?: boolean;
+  // pola uzupełniane z CRM (lib/listings.ts)
+  images?: string[];
+  description?: string;
+  features?: string[];
+  street?: string;
+  floorsTotal?: number;
+  reserved?: boolean;
 };
 
+// Oferty startowe (z dawnej strony). Gdy w CRM są aktywne oferty, strona bierze je stamtąd (lib/listings.ts).
 export const listings: Listing[] = [
   { slug: "stylowy-apartament-w-centrum", title: "Stylowy apartament w kamienicy", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 750000, area: 78.5, rooms: 3, floor: 2, year: 1930, featured: true },
   { slug: "loft-w-centrum", title: "Loftowe mieszkanie w centrum", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 750000, area: 80, rooms: 2, floor: 3 },
@@ -35,6 +43,7 @@ export const categories: { value: Category; label: string }[] = [
   { value: "mieszkania", label: "Mieszkania" },
   { value: "domy", label: "Domy" },
   { value: "dzialki", label: "Działki" },
+  { value: "lokale", label: "Lokale" },
 ];
 
 export const contact = {
