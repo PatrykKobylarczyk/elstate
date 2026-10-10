@@ -231,11 +231,12 @@ html.lenis, html.lenis body { height: auto; }
 html.intro { overflow: hidden; }
 html.intro .intro-screen {
   display: flex;
-  animation: intro-out 1s cubic-bezier(0.76, 0, 0.24, 1) 2.3s forwards;
+  animation: intro-out 1s cubic-bezier(0.76, 0, 0.24, 1) 2.7s forwards;
 }
-.intro-content { animation: intro-hide 0.5s cubic-bezier(0.12, 1, 0.2, 1) 1.9s forwards; }
+.intro-content { animation: intro-hide 0.5s cubic-bezier(0.12, 1, 0.2, 1) 2.3s forwards; }
 .intro-logo { animation: intro-fade 0.7s cubic-bezier(0.12, 1, 0.2, 1) 0.1s both; }
-.intro-dot { animation: intro-up 1.2s cubic-bezier(0.12, 1, 0.2, 1) 0.6s both; }
+/* kropka na końcu, jak kropka nad i, gdy „nieruchomości” już stoi */
+.intro-dot { animation: intro-up 1s cubic-bezier(0.12, 1, 0.2, 1) 1.25s both; }
 .intro-char { animation: intro-up 2.5s cubic-bezier(0.12, 1, 0.2, 1) both; }
 /* hero czeka, aż kurtyna zjedzie */
 html.intro .animate-rise, html.intro .skyline { animation-play-state: paused; }
