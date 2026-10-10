@@ -170,7 +170,7 @@ export default function Home() {
               </div>
             </div>
           )}
-          <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(42,42,45,0.96),rgba(42,42,45,0.25)_65%)]" />
+          <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(42,42,45,0.94),rgba(42,42,45,0.55)_28%,rgba(42,42,45,0)_52%)]" />
           <div className="flex h-full flex-col justify-end p-6 md:p-14">
             <p className="eyebrow text-gold-300">film · fotografia · spacer 3D</p>
             <h2 data-reveal className="mt-6 max-w-5xl font-display text-[clamp(2.4rem,5.6vw,6rem)] leading-[0.98]">
