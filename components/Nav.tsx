@@ -69,7 +69,7 @@ export default function Nav() {
                 href={l.href}
                 data-topic={l.topic}
                 className={`rounded-full px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
-                  onDark ? "text-pearl hover:bg-pearl/10" : "text-graphite hover:bg-plum-900/5 hover:text-plum-900"
+                  onDark ? "text-pearl hover:bg-pearl/10" : "text-graphite hover:bg-plum-900/10 hover:text-plum-900"
                 }`}
               >
                 {l.label}
