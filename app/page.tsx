@@ -7,13 +7,15 @@ import HeroDrawing from "@/components/HeroDrawing";
 import ListingCard from "@/components/ListingCard";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import SearchBar from "@/components/SearchBar";
+import { visitorRegion } from "@/lib/region";
 import { contact, formatArea, formatPrice, listings, markets, marquee, media, process, roomsLabel, services, team, values } from "@/lib/data";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).join("");
 }
 
-export default function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ panorama?: string }> }) {
+  const region = await visitorRegion((await searchParams).panorama);
   const featured = listings.find((l) => l.featured) ?? listings[0];
   const stats = [
     { value: listings.length, label: "aktualnych ofert" },
@@ -28,7 +30,7 @@ export default function Home() {
         {media.heroVideo ? (
           <video className="absolute inset-0 -z-10 h-full w-full object-cover" src={media.heroVideo} poster={media.heroPoster} autoPlay muted loop playsInline />
         ) : (
-          <HeroDrawing className="relative -z-10 mt-24 h-[32svh] w-full lg:absolute lg:inset-x-0 lg:bottom-[11rem] lg:mt-0 lg:h-auto lg:[mask-image:linear-gradient(to_right,rgba(0,0,0,0.2),rgba(0,0,0,0.3)_40%,black_62%)]" />
+          <HeroDrawing region={region} className="relative -z-10 mt-24 h-[32svh] w-full lg:absolute lg:inset-x-0 lg:bottom-[11rem] lg:mt-0 lg:h-auto lg:[mask-image:linear-gradient(to_right,rgba(0,0,0,0.2),rgba(0,0,0,0.3)_40%,black_62%)]" />
         )}
         
         <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-end px-5 pt-4 pb-10 md:px-10 lg:justify-center lg:pt-32" data-hero-fade>
