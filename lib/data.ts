@@ -61,7 +61,7 @@ export const team = [
     bio: "Zdjęcia, filmy z drona i spacery 3D, dzięki którym nieruchomość zapada w pamięć.",
     phone: "+48 789 985 677",
     email: "info@elstate.pl",
-    photo: "/team/patryk-kobylarczyk.jpg" as string | undefined,
+    photo: "/team/patryk-kobylarczyk-v2.jpg" as string | undefined,
   },
 ];
 
