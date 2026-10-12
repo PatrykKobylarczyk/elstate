@@ -138,7 +138,7 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<O
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link href="/oferty" scroll={false} className="btn-ghost text-plum-900">Pokaż wszystkie</Link>
-                <Link href="/#kontakt" data-topic="kontakt" className="btn-primary">Napisz, czego szukasz <Arrow /></Link>
+                <Link href="/#kontakt" data-topic="szukam" className="btn-primary">Opisz, czego szukasz <Arrow /></Link>
               </div>
             </div>
           )}
@@ -158,7 +158,7 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<O
             </p>
           </div>
           <div className="flex flex-wrap gap-3 lg:justify-end">
-            <Link href="/#kontakt" data-topic="kontakt" className="btn-primary" data-cursor="Napisz">Opisz, czego szukasz <Arrow /></Link>
+            <Link href="/#kontakt" data-topic="szukam" className="btn-primary" data-cursor="Napisz">Opisz, czego szukasz <Arrow /></Link>
             <a href={contact.phoneHref} className="btn-ghost text-plum-900">{contact.phone}</a>
           </div>
         </div>

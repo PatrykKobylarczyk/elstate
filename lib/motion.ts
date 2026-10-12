@@ -11,7 +11,7 @@
 //   data-cursor="Zobacz"  etykieta kursora nad elementem (linki tel: i mailto: mają „Zadzwoń” i „Napisz” same)
 //   data-count="9"        licznik od zera do wartości przy pierwszym pojawieniu się
 
-type LenisLike = { raf(t: number): void; destroy(): void; on(e: string, cb: () => void): void };
+type LenisLike = { raf(t: number): void; destroy(): void; on(e: string, cb: () => void): void; scrollTo(t: number, o?: { immediate?: boolean; force?: boolean }): void };
 type LenisCtor = new (opts?: Record<string, unknown>) => LenisLike;
 
 export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
@@ -95,6 +95,31 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
   sizeH();
   window.addEventListener("resize", sizeH);
   cleanups.push(() => window.removeEventListener("resize", sizeH));
+
+  // Wejście z innej podstrony na adres z kotwicą (np. /#kontakt): tor ofert dostaje wysokość dopiero tutaj, a zdjęcia
+  // i fonty doczytują się później, więc przewinięcie przeglądarki trafiało w inną sekcję. Przez chwilę, aż układ
+  // się ustabilizuje, trzymamy cel u góry ekranu; pierwszy ruch kółkiem, palcem lub klawiszem przerywa.
+  const anchor = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+  if (anchor) {
+    const pad = parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
+    const settle = () => {
+      const y = Math.round(anchor.getBoundingClientRect().top + window.scrollY - pad);
+      if (Math.abs(y - window.scrollY) < 2) return;
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo(0, y);
+    };
+    const ro = new ResizeObserver(settle);
+    ro.observe(document.body);
+    const stop = () => {
+      ro.disconnect();
+      clearTimeout(timer);
+      ["wheel", "touchstart", "keydown", "pointerdown"].forEach((e) => window.removeEventListener(e, stop));
+    };
+    const timer = setTimeout(stop, 3000);
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((e) => window.addEventListener(e, stop, { passive: true }));
+    requestAnimationFrame(settle);
+    cleanups.push(stop);
+  }
 
   let mx = 0, my = 0, cx = 0, cy = 0;
   const onMouse = (e: MouseEvent) => {

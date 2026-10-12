@@ -1,5 +1,7 @@
-// Tytuł i podpowiedzi formularza kontaktowego zależą od przycisku, którym ktoś trafił na /kontakt?temat=…
-// (navbar „Kontakt” bez tematu, „Otrzymaj wycenę” → wycena, „Umów konsultację” → kredyt).
+// Tytuł i podpowiedzi formularza kontaktowego zależą od przycisku, którym ktoś do niego trafił.
+// Zasada: tytuł formularza = napis na przycisku. Nowy przycisk prowadzący do formularza dostaje data-topic
+// z tematem, którego title brzmi tak samo jak jego napis (w razie potrzeby dopisz tu nowy temat).
+// „Kontakt” → kontakt, „Otrzymaj wycenę” → wycena, „Umów konsultację” → kredyt, „Opisz, czego szukasz” → szukam.
 export const topics = {
   kontakt: {
     title: "Kontakt",
@@ -19,6 +21,12 @@ export const topics = {
     lead: "Doradca kredytowy oddzwoni i umówi się z Tobą na rozmowę.",
     placeholder: "Jakiej nieruchomości szukasz, jaki masz wkład własny i kiedy wygodnie Ci rozmawiać?",
   },
+  szukam: {
+    title: "Opisz, czego szukasz",
+    subject: "Poszukiwanie nieruchomości",
+    lead: "Damy znać, zanim oferta trafi na portale, także o tych, które sprzedajemy dyskretnie.",
+    placeholder: "Kupno czy wynajem, dzielnica, metraż, liczba pokoi, budżet, termin…",
+  },
   oferta: {
     title: "Umówmy prezentację",
     subject: "Prezentacja oferty",
@@ -29,7 +37,7 @@ export const topics = {
 
 export type Topic = keyof typeof topics;
 
-// Przyciski „Kontakt”, „Otrzymaj wycenę”, „Umów konsultację” prowadzą do formularza na dole strony głównej (/#kontakt)
+// Przyciski z data-topic prowadzą do formularza na dole strony głównej (/#kontakt)
 // i mają data-topic. Kliknięcie zapisuje temat (przeżyje przejście z podstrony) i ogłasza go formularzowi.
 export const TOPIC_KEY = "elstate-topic";
 export const TOPIC_EVENT = "elstate-topic";
