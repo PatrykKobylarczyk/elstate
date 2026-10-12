@@ -97,16 +97,16 @@ export default async function Oferta({ params }: Props) {
           </div>
         )}
         {/* blenda tylko na dolnej 1/3 zdjęcia (pod napisami) i wąski pas u góry pod menu */}
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(29,4,18,0.92),rgba(29,4,18,0.6)_14%,rgba(29,4,18,0)_33.3%),linear-gradient(to_bottom,rgba(29,4,18,0.35),rgba(29,4,18,0)_14%)]" />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(42,42,45,0.92),rgba(42,42,45,0.6)_14%,rgba(42,42,45,0)_33.3%),linear-gradient(to_bottom,rgba(42,42,45,0.35),rgba(42,42,45,0)_14%)]" />
 
-        <div className="mx-auto mt-auto w-full max-w-[96rem] px-5 pb-8 pt-32 [text-shadow:0_2px_30px_rgba(29,4,18,0.5)] md:px-10 md:pb-12">
+        <div className="mx-auto mt-auto w-full max-w-[96rem] px-5 pb-8 pt-32 [text-shadow:0_2px_30px_rgba(42,42,45,0.5)] md:px-10 md:pb-12">
           <div className="flex animate-rise flex-wrap items-center gap-2">
-            <Link href="/oferty" className="mr-1 inline-flex items-center gap-2 rounded-full bg-plum-950/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md transition-colors hover:bg-plum-950/70">
+            <Link href="/oferty" className="mr-1 inline-flex items-center gap-2 rounded-full bg-graphite/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md transition-colors hover:bg-graphite/70">
               <Arrow dir="left" /> Oferty
             </Link>
             <span className="rounded-full bg-pearl px-3.5 py-1.5 text-xs font-semibold text-plum-900">{deal}</span>
             {l.reserved && <span className="rounded-full bg-gold-500 px-3.5 py-1.5 text-xs font-semibold text-plum-950">Rezerwacja</span>}
-            <span className="rounded-full bg-plum-950/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md">{[l.district, l.city].filter(Boolean).join(" · ")}</span>
+            <span className="rounded-full bg-graphite/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md">{[l.district, l.city].filter(Boolean).join(" · ")}</span>
           </div>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <h1 className="max-w-[16ch] animate-rise font-display text-[clamp(2.6rem,6.4vw,6.5rem)] leading-[0.95] [animation-delay:120ms] lg:text-[clamp(3rem,min(6vw,10vh),6.5rem)]">
@@ -158,7 +158,7 @@ export default async function Oferta({ params }: Props) {
         </div>
         {/* napis „Wszystko, co warto wiedzieć” i opis zaczynają się na tej samej wysokości */}
         <div className="mx-auto mt-6 grid max-w-[96rem] gap-12 px-5 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-          <div className="lg:self-start">
+          <div id="fakty" className="lg:self-start">
             <h2 className="font-display text-[clamp(2.2rem,4vw,4rem)] leading-[1]">
               Wszystko, co <em className="text-plum-900">warto wiedzieć.</em>
             </h2>
@@ -171,18 +171,18 @@ export default async function Oferta({ params }: Props) {
               ))}
             </dl>
           </div>
-          <div className="max-w-2xl lg:pt-2">
+          <div id="opis" className="max-w-2xl lg:pt-2">
             {paragraphs.length > 0 ? (
-              <Expandable>
+              <Expandable alignWith="fakty" column="opis">
               <div className="space-y-5">
-                <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">{paragraphs[0]}</p>
+                <p data-words className="font-display text-[clamp(1.15rem,1.45vw,1.45rem)] leading-[1.35]">{paragraphs[0]}</p>
                 {paragraphs.slice(1).map((p, i) => (
-                  <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[1.05rem]">{p}</p>
+                  <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[0.95rem]">{p}</p>
                 ))}
               </div>
               </Expandable>
             ) : (
-              <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">
+              <p data-words className="font-display text-[clamp(1.15rem,1.45vw,1.45rem)] leading-[1.35]">
                 {roomsLabel(l.rooms)}, {formatArea(l.area)}, {floor}. {l.district ? `${l.district}, ${l.city}.` : `${l.city}.`} Pełny opis, zdjęcia i rzut
                 prześlemy po krótkiej rozmowie. Zapytaj o termin prezentacji.
               </p>
