@@ -82,7 +82,7 @@ export default async function Oferta({ params }: Props) {
       <section className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-plum-950 text-pearl">
         {hasPhoto ? (
           <div className="absolute inset-x-0 -top-[8%] -z-10 h-[116%]" data-parallax="-0.12">
-            <Image src={images[0]} alt={l.title} fill priority className="animate-[offer-zoom_2.4s_cubic-bezier(0.16,1,0.3,1)_both] object-cover" sizes="100vw" />
+            <Image src={images[0]} alt={l.title} fill priority quality={85} className="animate-[offer-zoom_2.4s_cubic-bezier(0.16,1,0.3,1)_both] object-cover" sizes="(orientation: portrait) 180vh, 100vw" />
           </div>
         ) : (
           <div aria-hidden className="absolute inset-0 -z-10 bg-plum-900">
