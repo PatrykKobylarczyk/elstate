@@ -47,8 +47,8 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Na stronie głównej menu leży na fioletowym hero, dopóki nie przewiniesz
-  const onDark = pathname === "/" && !scrolled && !open;
+  // Na stronie głównej i liście ofert menu leży na fioletowym hero, dopóki nie przewiniesz
+  const onDark = (pathname === "/" || pathname === "/oferty") && !scrolled && !open;
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-4">

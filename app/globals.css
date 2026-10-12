@@ -247,3 +247,6 @@ html.intro .animate-rise, html.intro .skyline { animation-play-state: paused; }
 @keyframes intro-out { to { transform: translateY(-100%); } }
 html.intro body > :is(header, main, footer) { animation: intro-page 1s cubic-bezier(0.76, 0, 0.24, 1) 2.7s backwards; }
 @keyframes intro-page { from { transform: translateY(35vh); } }
+
+/* lista ofert: przygaszone wyniki, dopóki filtry się przeliczają */
+body:has(form[data-pending]) [data-results] { opacity: 0.45; }
