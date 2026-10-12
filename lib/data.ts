@@ -24,6 +24,7 @@ export type Listing = {
   street?: string;
   floorsTotal?: number;
   reserved?: boolean;
+  agentEmail?: string; // opiekun oferty z CRM; strona dobiera po nim osobę z zespołu
 };
 
 // Oferty startowe (z dawnej strony). Gdy w CRM są aktywne oferty, strona bierze je stamtąd (lib/listings.ts).

@@ -250,3 +250,7 @@ html.intro body > :is(header, main, footer) { animation: intro-page 1s cubic-bez
 
 /* lista ofert: przygaszone wyniki, dopóki filtry się przeliczają */
 body:has(form[data-pending]) [data-results] { opacity: 0.45; }
+
+@keyframes fade { from { opacity: 0; } }
+/* hero oferty: zdjęcie powoli się oddala po wejściu na stronę */
+@keyframes offer-zoom { from { transform: scale(1.12); } }
