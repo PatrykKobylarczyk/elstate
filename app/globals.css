@@ -243,4 +243,7 @@ html.intro .animate-rise, html.intro .skyline { animation-play-state: paused; }
 @keyframes intro-fade { from { opacity: 0; } }
 @keyframes intro-up { from { opacity: 0; transform: translateY(100%); } }
 @keyframes intro-hide { to { opacity: 0; } }
-@keyframes intro-out { to { transform: translateY(100%); } }
+/* kurtyna odjeżdża do góry, a strona wjeżdża od dołu razem z nią */
+@keyframes intro-out { to { transform: translateY(-100%); } }
+html.intro body > :is(header, main, footer) { animation: intro-page 1s cubic-bezier(0.76, 0, 0.24, 1) 2.7s backwards; }
+@keyframes intro-page { from { transform: translateY(35vh); } }
