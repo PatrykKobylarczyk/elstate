@@ -35,21 +35,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           <HeroDrawing region={region} className="relative -z-10 mt-24 h-[32svh] w-full lg:absolute lg:inset-x-0 lg:bottom-[11rem] lg:mt-0 lg:h-auto lg:[mask-image:linear-gradient(to_right,rgba(0,0,0,0.2),rgba(0,0,0,0.3)_40%,black_62%)]" />
         )}
         
-        <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-end px-5 pt-4 pb-10 md:px-10 lg:justify-center lg:pt-32" data-hero-fade>
+        <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col justify-end px-5 pt-4 pb-10 md:px-10 lg:justify-center lg:pt-[max(6rem,13vh)] lg:pb-[3vh]" data-hero-fade>
           <p className="eyebrow animate-rise text-gold-300">butikowa agencja nieruchomości · Łódź</p>
-          <h1 className="mt-6 max-w-[14ch] animate-rise font-display text-[clamp(2.8rem,7vw,7.5rem)] leading-[0.95] text-pearl [animation-delay:120ms]">
+          <h1 className="mt-6 max-w-[14ch] animate-rise font-display text-[clamp(2.8rem,7vw,7.5rem)] lg:mt-[2.5vh] lg:text-[clamp(3.2rem,min(6.2vw,10.5vh),7rem)] leading-[0.95] text-pearl [animation-delay:120ms]">
             Sprzedajemy <em className="text-gold-400">przestrzeń,</em> która ma znaczenie.
           </h1>
-          <p className="mt-8 max-w-md animate-rise text-base leading-relaxed text-pearl/75 [animation-delay:220ms] md:text-lg">
+          <p className="mt-8 max-w-md animate-rise text-base leading-relaxed text-pearl/75 [animation-delay:220ms] md:text-lg lg:mt-[3.5vh]">
             Strategia, obraz i negocjacje w jednych rękach. Twoja nieruchomość dostaje własną historię, a Ty spokój.
           </p>
-          <div className="mt-10 flex animate-rise flex-wrap gap-3 [animation-delay:300ms]">
+          <div className="mt-10 flex animate-rise flex-wrap gap-3 [animation-delay:300ms] lg:mt-[4vh]">
             <Link href="/oferty" className="btn-light" data-cursor="Oferty">Zobacz oferty <Arrow /></Link>
             <Link href="/#kontakt" data-topic="wycena" className="btn-ghost text-pearl">Otrzymaj wycenę</Link>
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10">
+        <div className="relative z-10 mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10 lg:pb-[4vh]">
           <SearchBar districts={districtsOf(listings)} />
         </div>
       </section>

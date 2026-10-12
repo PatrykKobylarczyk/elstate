@@ -63,7 +63,7 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<O
         <div className="mx-auto max-w-[96rem] px-5 md:px-10">
           <p className="eyebrow animate-rise text-gold-300">oferty · Łódź i Trójmiasto</p>
           <div className="mt-6 flex flex-col gap-10 md:gap-14">
-            <h1 className="max-w-[12ch] animate-rise font-display text-[clamp(3rem,7.5vw,7.5rem)] leading-[0.95] [animation-delay:120ms]">
+            <h1 className="max-w-[12ch] animate-rise font-display text-[clamp(3rem,7.5vw,7.5rem)] leading-[0.95] [animation-delay:120ms] lg:text-[clamp(3.2rem,min(6.2vw,10.5vh),7rem)]">
               Znajdź swoje <em className="text-gold-400">miejsce.</em>
             </h1>
             <dl className="flex animate-rise gap-10 border-t border-pearl/15 pt-8 [animation-delay:220ms] sm:self-start md:gap-16">
