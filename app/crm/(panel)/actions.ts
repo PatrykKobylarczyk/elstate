@@ -77,7 +77,7 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   }
   let images: string[] = [];
   try {
-    images = (JSON.parse(str(f, "images") || "[]") as unknown[]).filter((x): x is string => typeof x === "string" && (x.startsWith("https://") || x.startsWith("/crm-pliki/"))).slice(0, 60);
+    images = (JSON.parse(str(f, "images") || "[]") as unknown[]).filter((x): x is string => typeof x === "string" && /^(https:\/\/|\/crm-pliki\/|\/zdjecia\/oferty\/|\/oferty\/)/.test(x)).slice(0, 60);
   } catch {}
   const status = oneOf(listingStatuses, str(f, "status"), "szkic");
   const values = {

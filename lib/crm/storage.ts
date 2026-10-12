@@ -41,11 +41,25 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
   const token = blobToken();
   if (token || blobStoreId()) {
     const { put } = await import("@vercel/blob");
+    const auth = token ? { token } : {};
+    const opts = { contentType: "image/webp", addRandomSuffix: false, ...auth };
+    const pathname = `oferty/${name}`;
     try {
-      const blob = await put(`oferty/${name}`, out, { access: "public", contentType: "image/webp", addRandomSuffix: false, ...(token ? { token } : {}) });
-      return blob.url;
+      // magazyn publiczny: zdjęcie ma własny adres w CDN Vercela
+      return (await put(pathname, out, { access: "public", ...opts })).url;
     } catch (e) {
-      console.error("[zdjęcia] Vercel Blob", e);
+      const msg = e instanceof Error ? e.message : "";
+      if (!/private/i.test(msg)) {
+        console.error("[zdjęcia] Vercel Blob", e);
+        throw new Error(`${file.name}: magazyn zdjęć odrzucił plik (${msg || "nieznany błąd"}).`);
+      }
+    }
+    // magazyn prywatny: zapisujemy prywatnie, a stronie podajemy plik przez /zdjecia/… (app/zdjecia)
+    try {
+      await put(pathname, out, { access: "private", ...opts });
+      return `/zdjecia/${pathname}`;
+    } catch (e) {
+      console.error("[zdjęcia] Vercel Blob (prywatny)", e);
       throw new Error(`${file.name}: magazyn zdjęć odrzucił plik (${e instanceof Error ? e.message : "nieznany błąd"}).`);
     }
   }
@@ -59,6 +73,11 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
 export async function removeImage(url: string) {
   try {
     if (url.startsWith("/crm-pliki/")) await unlink(path.join(LOCAL_DIR, path.basename(url)));
+    else if (url.startsWith("/zdjecia/") && (blobToken() || blobStoreId())) {
+      const { del } = await import("@vercel/blob");
+      const token = blobToken();
+      await del(url.slice("/zdjecia/".length), token ? { token } : undefined);
+    }
     else if (url.includes(".blob.vercel-storage.com") && (blobToken() || blobStoreId())) {
       const { del } = await import("@vercel/blob");
       const token = blobToken();
@@ -70,3 +89,12 @@ export async function removeImage(url: string) {
 }
 
 export const localUploadPath = (name: string) => path.join(LOCAL_DIR, path.basename(name));
+
+// Odczyt zdjęcia z prywatnego magazynu (dla /zdjecia/[...path]).
+export async function readPrivateImage(pathname: string) {
+  if (!/^oferty\/[\w-]+\.webp$/.test(pathname) || !(blobToken() || blobStoreId())) return null;
+  const { get } = await import("@vercel/blob");
+  const token = blobToken();
+  const r = await get(pathname, { access: "private", ...(token ? { token } : {}) });
+  return r && r.statusCode === 200 ? r : null;
+}
