@@ -223,14 +223,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
                   <h3 className="font-display text-[clamp(3.2rem,7vw,7.5rem)] leading-none transition-transform duration-700 group-hover:-translate-y-2">{m.city}</h3>
                   <p className="mt-6 max-w-md leading-relaxed opacity-70 md:mt-0">{m.text}</p>
                   <div>
-                  <ul className="mt-6 flex flex-wrap gap-2 md:mt-0">
+                  <Link href={`/oferty?miasto=${encodeURIComponent(m.city)}`} className={`${active ? "btn-light" : "btn-primary"} mt-6 md:mt-0`} data-cursor="Oferty">
+                    Zobacz oferty <Arrow />
+                  </Link>
+                  <ul className="mt-8 flex flex-wrap gap-2">
                     {m.areas.map((a) => (
                       <li key={a} className="rounded-full border border-current/20 px-5 py-2.5 text-sm opacity-80">{a}</li>
                     ))}
                   </ul>
-                  <Link href={`/oferty?miasto=${encodeURIComponent(m.city)}`} className={`${active ? "btn-light" : "btn-primary"} mt-8`} data-cursor="Oferty">
-                    Zobacz oferty <Arrow />
-                  </Link>
                   </div>
                 </div>
               </article>
