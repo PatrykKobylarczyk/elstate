@@ -212,20 +212,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       {/* RYNKI */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
-        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+        {/* subgrid: nazwy miast, opisy i przyciski w obu kaflach stoją na tych samych wysokościach */}
+        <div className="grid gap-3 md:grid-cols-2 md:grid-rows-[1fr_auto_auto_auto] md:gap-x-4 md:gap-y-0">
           {markets.map((m) => {
             const active = m.status === "Działamy";
             return (
-              <article key={m.city} data-reveal="clip" className={`group flex min-h-[30rem] flex-col justify-between overflow-hidden rounded-[2rem] p-8 md:rounded-[2.5rem] md:p-12 ${active ? "bg-plum-900 text-pearl" : "bg-mist text-graphite"}`}>
-                <span className={`self-start rounded-full px-6 py-2.5 text-sm ${active ? "bg-pearl text-plum-900" : "border border-graphite/20"}`}>{m.status}</span>
-                <div>
+              <article key={m.city} data-reveal="clip" className={`group flex min-h-[30rem] flex-col justify-between overflow-hidden md:row-span-4 md:grid md:grid-rows-subgrid md:gap-y-6 rounded-[2rem] p-8 md:rounded-[2.5rem] md:p-12 ${active ? "bg-plum-900 text-pearl" : "bg-mist text-graphite"}`}>
+                <span className={`self-start justify-self-start rounded-full px-6 py-2.5 text-sm ${active ? "bg-pearl text-plum-900" : "border border-graphite/20"}`}>{m.status}</span>
+                <div className="mt-10 md:contents">
                   <h3 className="font-display text-[clamp(3.2rem,7vw,7.5rem)] leading-none transition-transform duration-700 group-hover:-translate-y-2">{m.city}</h3>
-                  <p className="mt-6 max-w-md leading-relaxed opacity-70">{m.text}</p>
-                  <ul className="mt-6 flex flex-wrap gap-2">
+                  <p className="mt-6 max-w-md leading-relaxed opacity-70 md:mt-0">{m.text}</p>
+                  <div>
+                  <ul className="mt-6 flex flex-wrap gap-2 md:mt-0">
                     {m.areas.map((a) => (
                       <li key={a} className="rounded-full border border-current/20 px-5 py-2.5 text-sm opacity-80">{a}</li>
                     ))}
                   </ul>
+                  <Link href={`/oferty?miasto=${encodeURIComponent(m.city)}`} className={`${active ? "btn-light" : "btn-primary"} mt-8`} data-cursor="Oferty">
+                    Zobacz oferty <Arrow />
+                  </Link>
+                  </div>
                 </div>
               </article>
             );

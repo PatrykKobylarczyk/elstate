@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Mieszkania, domy, działki i lokale na sprzedaż i wynajem w Łodzi i Trójmieście. Aktualne oferty Elstate.",
 };
 
-const KEYS = ["transakcja", "kategoria", "lokalizacja", "cenaOd", "cenaDo", "metrazOd", "pokoje", "sort"] as const;
+const KEYS = ["miasto", "transakcja", "kategoria", "lokalizacja", "cenaOd", "cenaDo", "metrazOd", "pokoje", "sort"] as const;
 const pln = new Intl.NumberFormat("pl-PL");
 
 function offersLabel(n: number) {
@@ -32,6 +32,7 @@ function without(q: OfferQuery, key: keyof OfferQuery) {
 // czytelne etykiety aktywnych filtrów (do zdejmowania jednym kliknięciem)
 function activeChips(q: OfferQuery) {
   const chips: { key: keyof OfferQuery; label: string }[] = [];
+  if (q.miasto) chips.push({ key: "miasto", label: q.miasto });
   if (q.transakcja) chips.push({ key: "transakcja", label: q.transakcja === "wynajem" ? "Wynajem" : "Kupno" });
   if (q.kategoria) chips.push({ key: "kategoria", label: categories.find((c) => c.value === q.kategoria)?.label ?? q.kategoria });
   if (q.lokalizacja) chips.push({ key: "lokalizacja", label: q.lokalizacja });

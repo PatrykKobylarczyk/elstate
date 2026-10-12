@@ -2,6 +2,7 @@ import type { Listing } from "./data";
 
 // Filtry listy ofert. Wszystko siedzi w adresie (/oferty?transakcja=…), więc link z filtrami da się wysłać klientowi.
 export type OfferQuery = {
+  miasto?: string;
   transakcja?: string;
   kategoria?: string;
   lokalizacja?: string;
@@ -31,6 +32,7 @@ export function filterOffers(list: Listing[], q: OfferQuery) {
   const pokoje = num(q.pokoje);
   const out = list.filter(
     (l) =>
+      (!q.miasto || l.city === q.miasto) &&
       (!q.transakcja || l.deal === q.transakcja) &&
       (!q.kategoria || l.category === q.kategoria) &&
       (!q.lokalizacja || l.district === q.lokalizacja) &&

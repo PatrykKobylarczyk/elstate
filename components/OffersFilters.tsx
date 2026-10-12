@@ -40,6 +40,8 @@ export default function OffersFilters({ query, districts }: { query: OfferQuery;
       data-pending={pending || undefined}
       className="rounded-[1.75rem] border border-graphite/10 bg-pearl p-2 shadow-[0_20px_60px_rgba(29,4,18,0.18)]"
     >
+      {/* miasto przychodzi z kafli „Łódź” / „Trójmiasto” na stronie głównej; zostaje przy zmianie filtrów */}
+      {query.miasto && <input type="hidden" name="miasto" value={query.miasto} />}
       <div className="grid grid-cols-2 gap-1 lg:grid-cols-[1fr_1fr_1.1fr_1fr_auto]">
         <label className={cell}>
           <span className={label}>Transakcja</span>
