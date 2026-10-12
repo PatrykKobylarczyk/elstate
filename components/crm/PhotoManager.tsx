@@ -39,7 +39,14 @@ export default function PhotoManager({ initial, prefix }: { initial: string[]; p
       fd.set("prefix", prefix);
       const r = await uploadPhoto(fd).catch(() => ({ error: `${list[i].name}: błąd wysyłki.`, url: undefined }));
       if (r.url) setImages((x) => [...x, r.url!]);
-      else setError((e) => [e, r.error].filter(Boolean).join(" "));
+      else {
+        // brak magazynu dotyczy wszystkich plików: jeden komunikat i koniec wysyłki
+        if (r.error?.includes("Brak magazynu")) {
+          setError(r.error);
+          break;
+        }
+        setError((e) => [e, r.error].filter(Boolean).join(" "));
+      }
     }
     setBusy("");
     if (pick.current) pick.current.value = "";
