@@ -402,3 +402,15 @@ export async function importStarterListings() {
   refreshSite(starter.map((s) => s.slug));
   redirect("/crm/oferty");
 }
+
+// Kod e-mailem jako druga metoda logowania obok aplikacji
+export async function toggleEmailOtp(f: FormData) {
+  const user = await requireUser();
+  const on = f.get("on") === "1";
+  // bez aplikacji e-mail jest jedynym drugim krokiem i nie można go wyłączyć
+  if (!on && !user.totpEnabled) return;
+  const d = await db();
+  await d.update(users).set({ emailOtp: on }).where(eq(users.id, user.id));
+  await log(on ? "email_otp_enabled" : "user_toggled", { userId: user.id, subject: user.email, meta: { emailOtp: on } });
+  revalidatePath("/crm/ustawienia");
+}

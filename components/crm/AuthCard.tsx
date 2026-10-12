@@ -1,6 +1,18 @@
-export default function AuthCard({ title, sub, children }: { title: string; sub?: React.ReactNode; children: React.ReactNode }) {
+import { visitorRegion } from "@/lib/region";
+
+// Ekrany logowania CRM: fiolet jak hero strony, u dołu złota panorama Łodzi albo Gdańska
+// (ta sama, co na stronie głównej, wybierana według lokalizacji: lib/region.ts).
+const panorama = { lodz: "/hero/panorama.webp", gdansk: "/hero/panorama-gdansk.webp" };
+
+export default async function AuthCard({ title, sub, children }: { title: string; sub?: React.ReactNode; children: React.ReactNode }) {
+  const region = await visitorRegion();
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-plum-900 px-4 py-12">
+    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-plum-900 px-4 py-12">
+      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[55vh] md:h-[70vh]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={panorama[region]} alt="" className="skyline h-full w-full object-cover object-[78%_100%] opacity-60 lg:object-contain lg:object-bottom" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(50,9,32,0.75),rgba(50,9,32,0)_60%)]" />
+      </div>
       <div className="w-full max-w-sm">
         <p className="mb-8 text-center font-display text-3xl font-semibold tracking-[-0.02em] text-gold-500">
           elstate<span className="text-pearl">.</span>

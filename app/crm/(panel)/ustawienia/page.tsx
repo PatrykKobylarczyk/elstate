@@ -10,7 +10,8 @@ import { auditLabels } from "@/lib/crm/labels";
 import { audit, users } from "@/lib/crm/schema";
 import { storageReady } from "@/lib/crm/storage";
 import { changePassword } from "../../auth-actions";
-import { createUser, importNbot, resetUser2fa, toggleUser } from "../actions";
+import { mailReady } from "@/lib/crm/mail";
+import { createUser, importNbot, resetUser2fa, toggleEmailOtp, toggleUser } from "../actions";
 
 export const metadata: Metadata = { title: "Ustawienia" };
 
@@ -102,7 +103,7 @@ export default async function Ustawienia() {
                   <span className="block font-semibold">{u.name} {u.id === me.id && <span className="text-graphite/45">(Ty)</span>}</span>
                   <span className="block truncate text-sm text-graphite/55">{u.email}</span>
                 </span>
-                {!u.active ? <Badge tone="red">wyłączone</Badge> : !u.totpEnabled ? <Badge tone="gold">czeka na 1. logowanie</Badge> : <Badge tone="green">2FA</Badge>}
+                {!u.active ? <Badge tone="red">wyłączone</Badge> : !u.totpEnabled ? <Badge tone="gold">czeka na 1. logowanie</Badge> : <Badge tone="green">{[u.totpEnabled && "aplikacja", u.emailOtp && "e-mail"].filter(Boolean).join(" + ")}</Badge>}
                 {u.id !== me.id && (
                   <div className="flex gap-1.5">
                     <form action={toggleUser}>
@@ -148,6 +149,19 @@ export default async function Ustawienia() {
               <Submit>Zmień hasło</Submit>
             </div>
           </ActionForm>
+          <div className="mt-6 border-t border-graphite/10 pt-5">
+            <p className="text-sm font-semibold">Drugi krok logowania</p>
+            <p className="mt-1 text-sm text-graphite/60">
+              {[me.totpEnabled && "kod z aplikacji", me.emailOtp && "kod na e-mail"].filter(Boolean).join(" albo ")}
+            </p>
+            {mailReady() && me.totpEnabled && (
+              <form action={toggleEmailOtp} className="mt-3">
+                <input type="hidden" name="on" value={me.emailOtp ? "0" : "1"} />
+                <button className={btnGhost}>{me.emailOtp ? "Wyłącz kod na e-mail" : "Pozwól też na kod na e-mail"}</button>
+              </form>
+            )}
+            {!mailReady() && <p className="mt-2 text-xs text-graphite/50">Kod na e-mail zadziała po ustawieniu wysyłki maili (RESEND_API_KEY lub SMTP_URL w Vercelu).</p>}
+          </div>
           <div className="mt-6 border-t border-graphite/10 pt-5">
             <p className="mb-2 text-sm font-semibold">Powiadomienia o nowych zgłoszeniach</p>
             <NotifyButton />

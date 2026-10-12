@@ -1,12 +1,13 @@
 import "server-only";
 import bcrypt from "bcryptjs";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { and, eq, gt, lt, or, sql } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { generateSecret, generateURI, verify } from "otplib";
 import { db, dbConfigured } from "./db";
-import { audit, sessions, users, type User } from "./schema";
+import { mailReady } from "./mail";
+import { audit, loginCodes, sessions, users, type User } from "./schema";
 
 // Logowanie do CRM: hasło (bcrypt) + kod z aplikacji (TOTP, obowiązkowy).
 // Sesja: losowy token w ciasteczku httpOnly/secure/SameSite=Strict, w bazie tylko jego skrót sha256.
@@ -118,7 +119,7 @@ export async function markVerified() {
 export async function requireUser(): Promise<User> {
   const s = await currentSession();
   if (!s) redirect("/crm/logowanie");
-  if (!s.user.totpEnabled) redirect("/crm/logowanie/2fa-konfiguracja");
+  if (!has2fa(s.user)) redirect("/crm/logowanie/2fa-konfiguracja");
   if (!s.session.verified) redirect("/crm/logowanie/2fa");
   if (s.user.mustChangePassword) redirect("/crm/logowanie/nowe-haslo");
   return s.user;
@@ -143,10 +144,45 @@ export function randomPassword() {
 export async function ensureTotpSecret() {
   const s = await currentSession();
   if (!s) redirect("/crm/logowanie");
-  if (s.user.totpEnabled) redirect("/crm/logowanie/2fa");
+  if (has2fa(s.user)) redirect("/crm/logowanie/2fa");
   if (s.user.totpSecret) return { email: s.user.email, secret: s.user.totpSecret };
   const secret = newTotpSecret();
   const d = await db();
   await d.update(users).set({ totpSecret: secret }).where(eq(users.id, s.user.id));
   return { email: s.user.email, secret };
+}
+
+export const has2fa = (u: User) => u.totpEnabled || (u.emailOtp && mailReady());
+
+// Kod e-mailem: 6 cyfr, ważny 10 minut, najwyżej 5 prób; nowy kod unieważnia poprzednie
+export async function issueEmailCode(userId: number) {
+  const d = await db();
+  const [recent] = await d
+    // limit 45 s liczymy tylko od kodu, który wciąż czeka na użycie
+    .select({ n: sql<number>`count(*)::int`, last: sql<Date | null>`max(${loginCodes.createdAt}) filter (where ${loginCodes.usedAt} is null)` })
+    .from(loginCodes)
+    .where(and(eq(loginCodes.userId, userId), gt(loginCodes.createdAt, sql`now() - interval '15 minutes'`)));
+  if (recent.last && Date.now() - new Date(recent.last).getTime() < 45_000) return { error: "Kod został właśnie wysłany. Nowy możesz wysłać za chwilę." };
+  if (recent.n >= 5) return { error: "Wysłano już 5 kodów. Spróbuj ponownie za 15 minut." };
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  await d.update(loginCodes).set({ usedAt: new Date() }).where(and(eq(loginCodes.userId, userId), sql`${loginCodes.usedAt} is null`));
+  await d.insert(loginCodes).values({ userId, codeHash: sha(code), expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
+  return { code };
+}
+
+export async function checkEmailCode(userId: number, input: string) {
+  const code = input.replace(/\s/g, "");
+  if (!/^\d{6}$/.test(code)) return false;
+  const d = await db();
+  const [row] = await d
+    .select()
+    .from(loginCodes)
+    .where(and(eq(loginCodes.userId, userId), sql`${loginCodes.usedAt} is null`, gt(loginCodes.expiresAt, new Date())))
+    .orderBy(sql`${loginCodes.id} desc`)
+    .limit(1);
+  if (!row || row.attempts >= 5) return false;
+  const a = Buffer.from(sha(code));
+  const ok = timingSafeEqual(a, Buffer.from(row.codeHash));
+  await d.update(loginCodes).set(ok ? { usedAt: new Date() } : { attempts: row.attempts + 1 }).where(eq(loginCodes.id, row.id));
+  return ok;
 }

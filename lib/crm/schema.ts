@@ -14,6 +14,8 @@ export const users = pgTable("users", {
   // sekret TOTP; dopóki totp_enabled = false, logowanie wymusza konfigurację 2FA
   totpSecret: text("totp_secret"),
   totpEnabled: boolean("totp_enabled").notNull().default(false),
+  // drugi krok kodem wysyłanym e-mailem (zamiast albo obok aplikacji)
+  emailOtp: boolean("email_otp").notNull().default(false),
   mustChangePassword: boolean("must_change_password").notNull().default(false),
   active: boolean("active").notNull().default(true),
   createdAt: createdAt(),
@@ -29,6 +31,17 @@ export const sessions = pgTable("sessions", {
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
   ip: text("ip"),
   userAgent: text("user_agent"),
+  createdAt: createdAt(),
+});
+
+// Jednorazowe kody logowania wysyłane e-mailem; w bazie tylko skrót sha256
+export const loginCodes = pgTable("login_codes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  usedAt: timestamp("used_at", { withTimezone: true }),
   createdAt: createdAt(),
 });
 
