@@ -11,7 +11,18 @@ import sharp from "sharp";
 const LOCAL_DIR = path.join(process.cwd(), ".data", "uploads");
 const MAX_BYTES = 25 * 1024 * 1024;
 
-export const storageReady = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN) || !process.env.VERCEL;
+// Token Blob: zwykle BLOB_READ_WRITE_TOKEN, ale przy podłączaniu magazynu Vercel pozwala ustawić własny
+// prefiks (np. ELSTATE_READ_WRITE_TOKEN), więc szukamy też każdej zmiennej *_READ_WRITE_TOKEN z tokenem Blob.
+export function blobTokenVar(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return "BLOB_READ_WRITE_TOKEN";
+  return Object.keys(process.env).find((k) => k.endsWith("_READ_WRITE_TOKEN") && process.env[k]?.startsWith("vercel_blob_rw_"));
+}
+const blobToken = () => {
+  const k = blobTokenVar();
+  return k ? process.env[k] : undefined;
+};
+
+export const storageReady = () => Boolean(blobToken()) || !process.env.VERCEL;
 
 export async function saveImage(file: File, prefix: string): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error(`${file.name}: to nie jest zdjęcie.`);
@@ -23,12 +34,14 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
     .webp({ quality: 82 })
     .toBuffer();
   const name = `${prefix}-${randomBytes(6).toString("hex")}.webp`;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  const token = blobToken();
+  if (token) {
     const { put } = await import("@vercel/blob");
-    const blob = await put(`oferty/${name}`, out, { access: "public", contentType: "image/webp", addRandomSuffix: false });
+    const blob = await put(`oferty/${name}`, out, { access: "public", contentType: "image/webp", addRandomSuffix: false, token });
     return blob.url;
   }
-  if (process.env.VERCEL) throw new Error("Brak magazynu zdjęć: podłącz Vercel Blob (BLOB_READ_WRITE_TOKEN).");
+  if (process.env.VERCEL)
+    throw new Error(`Brak magazynu zdjęć w środowisku „${process.env.VERCEL_ENV ?? "?"}”: podłącz Vercel Blob do tego środowiska i zrób Redeploy. Szczegóły w CRM: Ustawienia.`);
   await mkdir(LOCAL_DIR, { recursive: true });
   await writeFile(path.join(LOCAL_DIR, name), out);
   return `/crm-pliki/${name}`;
@@ -37,9 +50,9 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
 export async function removeImage(url: string) {
   try {
     if (url.startsWith("/crm-pliki/")) await unlink(path.join(LOCAL_DIR, path.basename(url)));
-    else if (url.includes(".blob.vercel-storage.com") && process.env.BLOB_READ_WRITE_TOKEN) {
+    else if (url.includes(".blob.vercel-storage.com") && blobToken()) {
       const { del } = await import("@vercel/blob");
-      await del(url);
+      await del(url, { token: blobToken() });
     }
   } catch {
     // brak pliku nie blokuje zapisu oferty
