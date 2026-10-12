@@ -181,7 +181,9 @@ export function initMotion(opts: { Lenis?: LenisCtor } = {}) {
       const t = (e.target as HTMLElement).closest<HTMLElement>("[data-cursor], a, button, input, select, textarea");
       // telefony i maile w całej stronie dostają etykietę same, bez data-cursor
       const href = t?.getAttribute("href") || "";
-      const text = t?.dataset.cursor || (href.startsWith("tel:") ? "Zadzwoń" : href.startsWith("mailto:") ? "Napisz" : "");
+      // link wewnątrz elementu z data-cursor (np. karta oferty) przejmuje etykietę rodzica
+      const text = t?.dataset.cursor || (href.startsWith("tel:") ? "Zadzwoń" : href.startsWith("mailto:") ? "Napisz" : "")
+        || t?.parentElement?.closest<HTMLElement>("[data-cursor]")?.dataset.cursor || "";
       cursor!.classList.toggle("is-link", Boolean(t) && !text);
       cursor!.classList.toggle("is-label", Boolean(text));
       label.textContent = text;

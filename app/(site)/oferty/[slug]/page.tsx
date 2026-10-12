@@ -158,7 +158,7 @@ export default async function Oferta({ params }: Props) {
         </div>
         {/* napis „Wszystko, co warto wiedzieć” i opis zaczynają się na tej samej wysokości */}
         <div className="mx-auto mt-6 grid max-w-[96rem] gap-12 px-5 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-          <div className="lg:sticky lg:top-36 lg:self-start">
+          <div className="lg:self-start">
             <h2 className="font-display text-[clamp(2.2rem,4vw,4rem)] leading-[1]">
               Wszystko, co <em className="text-plum-900">warto wiedzieć.</em>
             </h2>
