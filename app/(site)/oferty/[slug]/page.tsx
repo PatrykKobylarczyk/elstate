@@ -9,7 +9,9 @@ import ListingCard from "@/components/ListingCard";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import Gallery, { OpenGallery } from "@/components/offer/Gallery";
 import ShareButton from "@/components/offer/ShareButton";
+import Expandable from "@/components/offer/Expandable";
 import StickyBar from "@/components/offer/StickyBar";
+import { geocode } from "@/lib/geocode";
 import { getListing, getListings } from "@/lib/listings";
 import { contact, floorLabel, formatArea, formatPrice, pricePerM2, roomsLabel, team } from "@/lib/data";
 
@@ -50,7 +52,10 @@ export default async function Oferta({ params }: Props) {
   const agent = team.find((t) => t.email === l.agentEmail) ?? team[0];
   const paragraphs = l.description?.split(/\n{2,}/).filter(Boolean) ?? [];
   const place = [l.street, l.district, l.city].filter(Boolean).join(", ");
-  const mapQuery = encodeURIComponent([l.street, l.district, l.city].filter(Boolean).join(", "));
+  // mapa: współrzędne z geokodowania (pewne), a gdy się nie uda, zapytanie tekstowe z „Polska”
+  const spot = await geocode({ street: l.street, district: l.district, city: l.city });
+  const mapQuery = spot ? `${spot.lat},${spot.lng}` : encodeURIComponent([l.street, l.district, l.city, "Polska"].filter(Boolean).join(", "));
+  const mapZoom = spot && (l.street || l.district) ? 15 : 13;
   const similar = all
     .filter((x) => x.slug !== l.slug && x.deal === l.deal)
     .sort((a, b) => Number(b.district === l.district) - Number(a.district === l.district) || Math.abs(a.price - l.price) - Math.abs(b.price - l.price))
@@ -91,16 +96,17 @@ export default async function Oferta({ params }: Props) {
             </div>
           </div>
         )}
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(29,4,18,0.95),rgba(29,4,18,0.55)_38%,rgba(29,4,18,0.1)_65%,rgba(29,4,18,0.45))]" />
+        {/* blenda tylko na dolnej 1/3 zdjęcia (pod napisami) i wąski pas u góry pod menu */}
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(29,4,18,0.92),rgba(29,4,18,0.6)_14%,rgba(29,4,18,0)_33.3%),linear-gradient(to_bottom,rgba(29,4,18,0.35),rgba(29,4,18,0)_14%)]" />
 
-        <div className="mx-auto mt-auto w-full max-w-[96rem] px-5 pb-8 pt-32 md:px-10 md:pb-12">
+        <div className="mx-auto mt-auto w-full max-w-[96rem] px-5 pb-8 pt-32 [text-shadow:0_2px_30px_rgba(29,4,18,0.5)] md:px-10 md:pb-12">
           <div className="flex animate-rise flex-wrap items-center gap-2">
-            <Link href="/oferty" className="mr-2 inline-flex items-center gap-2 text-sm text-pearl/70 transition-colors hover:text-pearl">
+            <Link href="/oferty" className="mr-1 inline-flex items-center gap-2 rounded-full bg-plum-950/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md transition-colors hover:bg-plum-950/70">
               <Arrow dir="left" /> Oferty
             </Link>
             <span className="rounded-full bg-pearl px-3.5 py-1.5 text-xs font-semibold text-plum-900">{deal}</span>
             {l.reserved && <span className="rounded-full bg-gold-500 px-3.5 py-1.5 text-xs font-semibold text-plum-950">Rezerwacja</span>}
-            <span className="rounded-full border border-pearl/25 px-3.5 py-1.5 text-xs text-pearl/85">{[l.district, l.city].filter(Boolean).join(" · ")}</span>
+            <span className="rounded-full bg-plum-950/45 px-3.5 py-1.5 text-xs text-pearl backdrop-blur-md">{[l.district, l.city].filter(Boolean).join(" · ")}</span>
           </div>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <h1 className="max-w-[16ch] animate-rise font-display text-[clamp(2.6rem,6.4vw,6.5rem)] leading-[0.95] [animation-delay:120ms] lg:text-[clamp(3rem,min(6vw,10vh),6.5rem)]">
@@ -167,12 +173,14 @@ export default async function Oferta({ params }: Props) {
           </div>
           <div className="max-w-2xl lg:pt-2">
             {paragraphs.length > 0 ? (
+              <Expandable>
               <div className="space-y-5">
                 <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">{paragraphs[0]}</p>
                 {paragraphs.slice(1).map((p, i) => (
                   <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[1.05rem]">{p}</p>
                 ))}
               </div>
+              </Expandable>
             ) : (
               <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">
                 {roomsLabel(l.rooms)}, {formatArea(l.area)}, {floor}. {l.district ? `${l.district}, ${l.city}.` : `${l.city}.`} Pełny opis, zdjęcia i rzut
@@ -238,7 +246,7 @@ export default async function Oferta({ params }: Props) {
           <div className="relative min-h-[22rem] lg:min-h-[34rem]">
             <iframe
               title={`Mapa: ${place}`}
-              src={`https://maps.google.com/maps?q=${mapQuery}&z=14&output=embed`}
+              src={`https://maps.google.com/maps?q=${mapQuery}&z=${mapZoom}&hl=pl&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="absolute inset-0 h-full w-full border-0 [filter:grayscale(1)_sepia(0.35)_contrast(1.05)_brightness(0.92)]"

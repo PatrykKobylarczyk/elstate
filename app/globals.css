@@ -177,7 +177,7 @@ html:not(.motion-ready) [data-hscroll] [data-track] {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 100;
+  z-index: 1000; /* nad pełnoekranowym podglądem zdjęć (z-100) */
   pointer-events: none;
   width: 0;
   height: 0;
