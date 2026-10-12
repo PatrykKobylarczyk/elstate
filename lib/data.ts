@@ -29,7 +29,28 @@ export type Listing = {
 
 // Oferty startowe (z dawnej strony). Gdy w CRM są aktywne oferty, strona bierze je stamtąd (lib/listings.ts).
 export const listings: Listing[] = [
-  { slug: "stylowy-apartament-w-centrum", title: "Stylowy apartament w kamienicy", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 750000, area: 78.5, rooms: 3, floor: 2, year: 1930, featured: true },
+  // oferta przykładowa (zdjęcia: public/oferty/jasne-mieszkanie-z-tarasem); dane liczbowe są poglądowe
+  {
+    slug: "jasne-mieszkanie-z-tarasem",
+    title: "Jasne mieszkanie z prywatnym tarasem na dachu",
+    district: "Widzew",
+    city: "Łódź",
+    category: "mieszkania",
+    deal: "sprzedaz",
+    price: 549000,
+    area: 42,
+    rooms: 2,
+    floor: 6,
+    floorsTotal: 6,
+    year: 2022,
+    featured: true,
+    image: "/oferty/jasne-mieszkanie-z-tarasem/01.webp",
+    images: ["/oferty/jasne-mieszkanie-z-tarasem/01.webp","/oferty/jasne-mieszkanie-z-tarasem/02.webp","/oferty/jasne-mieszkanie-z-tarasem/03.webp","/oferty/jasne-mieszkanie-z-tarasem/04.webp","/oferty/jasne-mieszkanie-z-tarasem/05.webp","/oferty/jasne-mieszkanie-z-tarasem/06.webp","/oferty/jasne-mieszkanie-z-tarasem/07.webp","/oferty/jasne-mieszkanie-z-tarasem/08.webp","/oferty/jasne-mieszkanie-z-tarasem/09.webp","/oferty/jasne-mieszkanie-z-tarasem/10.webp","/oferty/jasne-mieszkanie-z-tarasem/11.webp","/oferty/jasne-mieszkanie-z-tarasem/12.webp","/oferty/jasne-mieszkanie-z-tarasem/13.webp","/oferty/jasne-mieszkanie-z-tarasem/14.webp"],
+    description:
+      "Ciepłe drewno, beże i dużo dziennego światła. Mieszkanie urządzone pod klucz przez projektanta, gotowe do wprowadzenia się od pierwszego dnia.\n\nSalon z aneksem kuchennym otwiera się na okno balkonowe, a osobna sypialnia mieści szafę w zabudowie na całą wysokość ściany. Kuchnia ma sprzęty do zabudowy i blat z konglomeratu, łazienka prysznic typu walk-in i podświetlane lustro.\n\nNajwiększy atut czeka piętro wyżej: prywatny taras na dachu z widokiem na miasto, do zaaranżowania według własnego pomysłu.",
+    features: ["Prywatny taras na dachu", "Wykończone pod klucz", "Zabudowy na wymiar", "Klimatyzacja", "Prysznic walk-in", "Ostatnie piętro"],
+  },
+  { slug: "stylowy-apartament-w-centrum", title: "Stylowy apartament w kamienicy", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 750000, area: 78.5, rooms: 3, floor: 2, year: 1930 },
   { slug: "loft-w-centrum", title: "Loftowe mieszkanie w centrum", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 750000, area: 80, rooms: 2, floor: 3 },
   { slug: "dwa-pokoje-w-centrum", title: "Dwa pokoje w centrum", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 700000, area: 38.5, rooms: 2, floor: 1, year: 2001 },
   { slug: "trzy-pokoje-w-centrum", title: "Mieszkanie 3-pokojowe w centrum", district: "Centrum", city: "Łódź", category: "mieszkania", deal: "sprzedaz", price: 550000, area: 65, rooms: 3, floor: 2 },
