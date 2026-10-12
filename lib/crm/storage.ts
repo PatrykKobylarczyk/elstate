@@ -22,7 +22,11 @@ const blobToken = () => {
   return k ? process.env[k] : undefined;
 };
 
-export const storageReady = () => Boolean(blobToken()) || !process.env.VERCEL;
+// Nowsze magazyny Blob nie dają tokenu, tylko BLOB_STORE_ID: wtedy @vercel/blob loguje się sam przez OIDC Vercela.
+const blobStoreId = () => process.env.BLOB_STORE_ID;
+export const blobMode = () => (blobToken() ? `token (${blobTokenVar()})` : blobStoreId() ? "BLOB_STORE_ID + OIDC" : null);
+
+export const storageReady = () => Boolean(blobToken() || blobStoreId()) || !process.env.VERCEL;
 
 export async function saveImage(file: File, prefix: string): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error(`${file.name}: to nie jest zdjęcie.`);
@@ -35,10 +39,15 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
     .toBuffer();
   const name = `${prefix}-${randomBytes(6).toString("hex")}.webp`;
   const token = blobToken();
-  if (token) {
+  if (token || blobStoreId()) {
     const { put } = await import("@vercel/blob");
-    const blob = await put(`oferty/${name}`, out, { access: "public", contentType: "image/webp", addRandomSuffix: false, token });
-    return blob.url;
+    try {
+      const blob = await put(`oferty/${name}`, out, { access: "public", contentType: "image/webp", addRandomSuffix: false, ...(token ? { token } : {}) });
+      return blob.url;
+    } catch (e) {
+      console.error("[zdjęcia] Vercel Blob", e);
+      throw new Error(`${file.name}: magazyn zdjęć odrzucił plik (${e instanceof Error ? e.message : "nieznany błąd"}).`);
+    }
   }
   if (process.env.VERCEL)
     throw new Error(`Brak magazynu zdjęć w środowisku „${process.env.VERCEL_ENV ?? "?"}”: podłącz Vercel Blob do tego środowiska i zrób Redeploy. Szczegóły w CRM: Ustawienia.`);
@@ -50,9 +59,10 @@ export async function saveImage(file: File, prefix: string): Promise<string> {
 export async function removeImage(url: string) {
   try {
     if (url.startsWith("/crm-pliki/")) await unlink(path.join(LOCAL_DIR, path.basename(url)));
-    else if (url.includes(".blob.vercel-storage.com") && blobToken()) {
+    else if (url.includes(".blob.vercel-storage.com") && (blobToken() || blobStoreId())) {
       const { del } = await import("@vercel/blob");
-      await del(url, { token: blobToken() });
+      const token = blobToken();
+      await del(url, token ? { token } : undefined);
     }
   } catch {
     // brak pliku nie blokuje zapisu oferty

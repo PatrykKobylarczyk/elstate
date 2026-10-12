@@ -8,7 +8,7 @@ import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { auditLabels } from "@/lib/crm/labels";
 import { audit, users } from "@/lib/crm/schema";
-import { blobTokenVar, storageReady } from "@/lib/crm/storage";
+import { blobMode, storageReady } from "@/lib/crm/storage";
 import { changePassword } from "../../auth-actions";
 import { mailReady } from "@/lib/crm/mail";
 import { createUser, importNbot, resetUser2fa, toggleEmailOtp, toggleUser } from "../actions";
@@ -168,8 +168,8 @@ export default async function Ustawienia() {
             <p className="mt-2 text-xs text-graphite/50">Działają, gdy CRM jest otwarty w karcie przeglądarki. Licznik w menu odświeża się co minutę.</p>
           </div>
           {/* diagnostyka magazynu zdjęć: tylko nazwy zmiennych, nigdy wartości */}
-          {blobTokenVar() ? (
-            <p className="mt-5 text-xs text-graphite/50">Magazyn zdjęć: połączony (zmienna {blobTokenVar()}).</p>
+          {blobMode() ? (
+            <p className="mt-5 text-xs text-graphite/50">Magazyn zdjęć: połączony ({blobMode()}).</p>
           ) : (
             !storageReady() && (
               <div className="mt-5 rounded-xl bg-gold-200 p-3 text-sm">
