@@ -147,10 +147,13 @@ export default async function Oferta({ params }: Props) {
 
       {/* OPIS + ATUTY */}
       <section className="bg-pearl py-24 text-graphite md:py-36">
-        <div className="mx-auto grid max-w-[96rem] gap-12 px-5 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+        <div className="mx-auto max-w-[96rem] px-5 md:px-10">
+          <p className="eyebrow text-plum-900">o nieruchomości</p>
+        </div>
+        {/* napis „Wszystko, co warto wiedzieć” i opis zaczynają się na tej samej wysokości */}
+        <div className="mx-auto mt-6 grid max-w-[96rem] gap-12 px-5 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-36 lg:self-start">
-            <p className="eyebrow text-plum-900">o nieruchomości</p>
-            <h2 className="mt-6 font-display text-[clamp(2.2rem,4vw,4rem)] leading-[1]">
+            <h2 className="font-display text-[clamp(2.2rem,4vw,4rem)] leading-[1]">
               Wszystko, co <em className="text-plum-900">warto wiedzieć.</em>
             </h2>
             <dl className="mt-10 divide-y divide-graphite/10 border-y border-graphite/10">
@@ -162,16 +165,16 @@ export default async function Oferta({ params }: Props) {
               ))}
             </dl>
           </div>
-          <div>
+          <div className="max-w-2xl lg:pt-2">
             {paragraphs.length > 0 ? (
-              <div className="space-y-6">
-                <p data-words className="font-display text-[clamp(1.6rem,2.6vw,2.4rem)] leading-[1.2]">{paragraphs[0]}</p>
+              <div className="space-y-5">
+                <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">{paragraphs[0]}</p>
                 {paragraphs.slice(1).map((p, i) => (
-                  <p key={i} className="whitespace-pre-line text-lg leading-relaxed text-graphite/75">{p}</p>
+                  <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[1.05rem]">{p}</p>
                 ))}
               </div>
             ) : (
-              <p data-words className="font-display text-[clamp(1.6rem,2.6vw,2.4rem)] leading-[1.2]">
+              <p data-words className="font-display text-[clamp(1.3rem,1.8vw,1.75rem)] leading-[1.3]">
                 {roomsLabel(l.rooms)}, {formatArea(l.area)}, {floor}. {l.district ? `${l.district}, ${l.city}.` : `${l.city}.`} Pełny opis, zdjęcia i rzut
                 prześlemy po krótkiej rozmowie. Zapytaj o termin prezentacji.
               </p>
