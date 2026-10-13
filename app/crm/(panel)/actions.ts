@@ -232,11 +232,11 @@ export async function createLead(_: State, f: FormData): Promise<State> {
 export async function importNbot(_: State, f: FormData): Promise<State> {
   const user = await requireUser();
   const body = str(f, "mail");
-  if (body.length < 10) return { error: "Wklej treść maila z nbot." };
+  if (body.length < 10) return { error: "Wklej link, tekst oferty albo treść maila z nbota." };
   const html = /<\/?(a|p|div|table|br)\b/i.test(body) ? body : undefined;
   const r = await ingestNbot({ subject: opt(f, "subject") ?? undefined, text: html ? undefined : body, html }, user.id);
   revalidatePath("/crm", "layout");
-  return { ok: `Dodano: ${r.added}${r.repeated ? `, powtórki już znanych ogłoszeń: ${r.repeated}` : ""}.` };
+  return { ok: `Dodano do „Do kontaktu”: ${r.added}${r.repeated ? `, już znane ogłoszenia: ${r.repeated}` : ""}.` };
 }
 
 export async function leadToClient(f: FormData) {

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, asc, desc, eq, ilike, inArray, isNotNull, or, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { Badge, Empty, PageHead, ago, input, leadTone, pln, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
-import { INBOX, label, leadSources, leadStatuses } from "@/lib/crm/labels";
+import { HIDDEN, INBOX, REVIEW, label, leadSources, leadStatuses } from "@/lib/crm/labels";
 import { leads, users } from "@/lib/crm/schema";
 import { quickLeadStatus } from "../actions";
 
@@ -12,6 +12,7 @@ export const metadata: Metadata = { title: "Do kontaktu" };
 
 const views = [
   ["", "Do kontaktu"],
+  ["przeglad", "Z nbota do przejrzenia"],
   ["terminy", "Zaplanowane"],
   ["w-toku", "W toku"],
   ["pozyskane", "Pozyskane"],
@@ -30,6 +31,8 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
   if (view === "w-toku") where.push(inArray(leads.status, ["w_kontakcie", "umowione"]));
   if (view === "pozyskane") where.push(eq(leads.status, "pozyskany"));
   if (view === "odrzucone") where.push(eq(leads.status, "odrzucony"));
+  if (view === "przeglad") where.push(eq(leads.status, REVIEW));
+  if (view === "wszystkie") where.push(notInArray(leads.status, HIDDEN));
   if (sp.zrodlo) where.push(eq(leads.source, sp.zrodlo));
   if (sp.q) {
     const q = `%${sp.q.trim()}%`;
@@ -42,6 +45,7 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
     .where(and(...where))
     .orderBy(view === "terminy" ? asc(leads.nextContactAt) : desc(leads.createdAt))
     .limit(200);
+  const [review] = await d.select({ n: sql<number>`count(*)::int` }).from(leads).where(eq(leads.status, REVIEW));
 
   const href = (p: Record<string, string | undefined>) => {
     const q = new URLSearchParams(Object.entries({ widok: view, q: sp.q, zrodlo: sp.zrodlo, ...p }).filter((e): e is [string, string] => Boolean(e[1])));
@@ -50,8 +54,8 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <>
-      <PageHead title="Zgłoszenia" sub="Nowe ogłoszenia z nbot, wiadomości ze strony i kontakty dodane ręcznie.">
-        <Link href="/crm/ustawienia#nbot" className="inline-flex rounded-full border border-graphite/15 bg-white px-4 py-2 text-sm font-semibold hover:border-plum-700">Wklej mail z nbot</Link>
+      <PageHead title="Zgłoszenia" sub="Wybrane ogłoszenia z nbota, wiadomości ze strony i kontakty dodane ręcznie.">
+        <Link href="/crm/leady/z-nbota" className="inline-flex rounded-full border border-graphite/15 bg-white px-4 py-2 text-sm font-semibold hover:border-plum-700">Dodaj z nbota</Link>
         <Link href="/crm/leady/nowy" className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">+ Dodaj</Link>
       </PageHead>
 
@@ -59,6 +63,7 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
         {views.map(([k, v]) => (
           <Link key={k} href={href({ widok: k || undefined })} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${view === k ? "bg-plum-900 text-pearl" : "bg-white text-graphite/70 hover:text-plum-900"}`}>
             {v}
+            {k === "przeglad" && review.n > 0 && <span className={`ml-1.5 rounded-full px-1.5 text-xs ${view === k ? "bg-gold-500 text-plum-950" : "bg-gold-500/20 text-plum-900"}`}>{review.n}</span>}
           </Link>
         ))}
       </div>
@@ -97,6 +102,20 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
                 {l.url && (
                   <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="rounded-full border border-graphite/15 px-3 py-1.5 text-xs font-semibold hover:border-plum-700">Ogłoszenie ↗</a>
                 )}
+                {l.status === REVIEW && (
+                  <>
+                    <form action={quickLeadStatus}>
+                      <input type="hidden" name="id" value={l.id} />
+                      <input type="hidden" name="status" value="nowy" />
+                      <button className="rounded-full bg-plum-900 px-3 py-1.5 text-xs font-semibold text-pearl hover:bg-plum-700">Do CRM</button>
+                    </form>
+                    <form action={quickLeadStatus}>
+                      <input type="hidden" name="id" value={l.id} />
+                      <input type="hidden" name="status" value="pominiety" />
+                      <button className="rounded-full border border-graphite/15 px-3 py-1.5 text-xs font-semibold text-graphite/60 hover:text-red-800">Pomiń</button>
+                    </form>
+                  </>
+                )}
                 {INBOX.includes(l.status) && (
                   <>
                     <form action={quickLeadStatus}>
@@ -116,7 +135,7 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
           ))}
         </ul>
       ) : (
-        <Empty>{view === "" ? "Nic nie czeka na kontakt." : "Brak zgłoszeń w tym widoku."}</Empty>
+        <Empty>{view === "" ? "Nic nie czeka na kontakt." : view === "przeglad" ? "Wszystko przejrzane. Nowe ogłoszenia z maili nbota pojawią się tutaj." : "Brak zgłoszeń w tym widoku."}</Empty>
       )}
     </>
   );

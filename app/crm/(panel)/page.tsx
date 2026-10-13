@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, lte, notInArray, sql } from "drizzle-orm";
 import { Badge, card, Empty, PageHead, ago, leadTone, pln, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
-import { INBOX, label, leadSources, leadStatuses } from "@/lib/crm/labels";
+import { HIDDEN, INBOX, REVIEW, label, leadSources, leadStatuses } from "@/lib/crm/labels";
 import { leads, listings } from "@/lib/crm/schema";
 
 export const metadata: Metadata = { title: "Pulpit" };
@@ -21,7 +21,7 @@ export default async function Pulpit() {
       .where(and(isNotNull(leads.nextContactAt), lte(leads.nextContactAt, endOfDay), inArray(leads.status, ["do_kontaktu", "w_kontakcie", "umowione"])))
       .orderBy(asc(leads.nextContactAt))
       .limit(10),
-    d.select({ n: sql<number>`count(*)::int` }).from(leads).where(gte(leads.createdAt, sql`now() - interval '7 days'`)),
+    d.select({ n: sql<number>`count(*)::int` }).from(leads).where(and(gte(leads.createdAt, sql`now() - interval '7 days'`), notInArray(leads.status, HIDDEN))),
     d
       .select({
         active: sql<number>`count(*) filter (where ${listings.status} in ('aktywna','rezerwacja'))::int`,
@@ -31,6 +31,7 @@ export default async function Pulpit() {
       .from(listings),
   ]);
   const [inboxTotal] = await d.select({ n: sql<number>`count(*)::int` }).from(leads).where(inArray(leads.status, INBOX));
+  const [review] = await d.select({ n: sql<number>`count(*)::int` }).from(leads).where(eq(leads.status, REVIEW));
   const hour = Number(new Intl.DateTimeFormat("pl-PL", { hour: "numeric", timeZone: "Europe/Warsaw" }).format(new Date()));
   const hello = hour < 12 ? "Dzień dobry" : hour < 18 ? "Cześć" : "Dobry wieczór";
 
@@ -55,6 +56,12 @@ export default async function Pulpit() {
           </Link>
         ))}
       </div>
+      {review.n > 0 && (
+        <Link href="/crm/leady?widok=przeglad" className="mt-3 flex items-center justify-between gap-4 rounded-2xl border border-gold-500/40 bg-gold-500/10 px-5 py-3.5 text-sm font-semibold hover:border-gold-500">
+          <span>Z nbota czeka {review.n} {review.n === 1 ? "ogłoszenie" : review.n % 10 >= 2 && review.n % 10 <= 4 && (review.n % 100 < 12 || review.n % 100 > 14) ? "ogłoszenia" : "ogłoszeń"} do przejrzenia</span>
+          <span className="text-plum-900">Przejrzyj →</span>
+        </Link>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <section className={card}>

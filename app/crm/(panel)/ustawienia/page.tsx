@@ -59,7 +59,7 @@ export default async function Ustawienia() {
         <section id="nbot" className={`${card} lg:col-span-2`}>
           <h2 className="font-display text-xl text-plum-900">nbot → CRM</h2>
           <p className="mt-1 max-w-3xl text-sm text-graphite/60">
-            Każde nowe ogłoszenie z alertów nbot trafia do „Do kontaktu”. Można wkleić mail ręcznie albo ustawić automat w Gmailu, który przesyła alerty co 5 minut.
+            Ogłoszenia z maili przesyłanych automatem czekają w zakładce „Z nbota do przejrzenia”, gdzie wybierasz „Do CRM” albo „Pomiń”. To, co wkleisz ręcznie (tutaj albo w „Dodaj z nbota”), trafia od razu do „Do kontaktu”.
           </p>
           <div className="mt-5 grid gap-6 lg:grid-cols-2">
             <ActionForm action={importNbot} resetOnOk className="flex flex-col gap-3">

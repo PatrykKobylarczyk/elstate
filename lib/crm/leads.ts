@@ -6,13 +6,17 @@ import { audit, leads } from "./schema";
 
 // Zapis zgłoszeń do CRM: z maili nbot i z formularza na stronie.
 
+// Maile przychodzące automatem trafiają do poczekalni „Do przejrzenia”. To, co wkleja się ręcznie w CRM
+// (wybrana oferta z nbota: link, tekst albo cały mail), idzie od razu do „Do kontaktu”.
 export async function ingestNbot(mail: { subject?: string; text?: string; html?: string; from?: string }, userId?: number) {
+  const manual = userId !== undefined;
+  const status = manual ? "nowy" : "do_przejrzenia";
   const parsed = parseNbotEmail(mail);
   const d = await db();
   let added = 0;
   let repeated = 0;
   for (const p of parsed) {
-    const values = { ...p, source: "nbot", status: "nowy", message: mail.subject ?? null };
+    const values = { ...p, source: "nbot", status, message: mail.subject ?? null };
     if (!p.urlKey) {
       await d.insert(leads).values(values);
       added++;
@@ -27,6 +31,8 @@ export async function ingestNbot(mail: { subject?: string; text?: string; html?:
         set: {
           seenCount: sql`${leads.seenCount} + 1`,
           price: sql`coalesce(excluded.price, ${leads.price})`,
+          // ręcznie wklejone ogłoszenie, które czekało w poczekalni albo było pominięte, wraca do „Do kontaktu”
+          ...(manual ? { status: sql`case when ${leads.status} in ('do_przejrzenia', 'pominiety') then 'nowy' else ${leads.status} end` } : {}),
           updatedAt: sql`now()`,
         },
       })

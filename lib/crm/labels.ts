@@ -9,13 +9,20 @@ export const listingStatuses = [
 ] as const;
 
 export const leadStatuses = [
+  ["do_przejrzenia", "Do przejrzenia (z nbota)"],
   ["nowy", "Nowy, do kontaktu"],
   ["do_kontaktu", "Oddzwonić"],
   ["w_kontakcie", "W kontakcie"],
   ["umowione", "Umówione spotkanie"],
   ["pozyskany", "Pozyskany"],
   ["odrzucony", "Odrzucony"],
+  ["pominiety", "Pominięty (z nbota)"],
 ] as const;
+
+// poczekalnia: ogłoszenia z maili nbot czekają na decyzję „Do CRM” albo „Pomiń”;
+// pominięte zostają w bazie ukryte, żeby to samo ogłoszenie nie wróciło z kolejnym mailem
+export const REVIEW = "do_przejrzenia";
+export const HIDDEN = ["do_przejrzenia", "pominiety"];
 
 // skrzynka „Do kontaktu”: nowe zgłoszenia i te, do których trzeba wrócić
 export const INBOX = ["nowy", "do_kontaktu"];

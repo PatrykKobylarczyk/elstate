@@ -133,7 +133,8 @@ export function parseNbotEmail(input: { subject?: string; text?: string; html?: 
       start = lineStart(text, u.at);
       end = i + 1 < picked.length ? lineStart(text, picked[i + 1].at) : Math.min(tail, u.at + 800);
     }
-    const block = text.slice(start, end);
+    // jedno ogłoszenie (np. wklejony link z opisem): cały tekst dotyczy właśnie jego
+    const block = picked.length === 1 ? text.slice(0, tail) : text.slice(start, end);
     return {
       title: titleOf(block, subject),
       url: u.url,

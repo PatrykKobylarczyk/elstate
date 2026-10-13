@@ -45,7 +45,7 @@ export function Badge({ tone = "gray", children }: { tone?: keyof typeof tones |
   return <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${tones[tone] ?? tones.gray}`}>{children}</span>;
 }
 
-export const leadTone: Record<string, string> = { nowy: "plum", do_kontaktu: "gold", w_kontakcie: "blue", umowione: "blue", pozyskany: "green", odrzucony: "gray" };
+export const leadTone: Record<string, string> = { nowy: "plum", do_kontaktu: "gold", w_kontakcie: "blue", umowione: "blue", pozyskany: "green", odrzucony: "gray", do_przejrzenia: "gold", pominiety: "gray" };
 export const listingTone: Record<string, string> = { szkic: "gray", aktywna: "green", rezerwacja: "gold", sprzedana: "plum", archiwum: "gray" };
 
 export function Empty({ children }: { children: React.ReactNode }) {
