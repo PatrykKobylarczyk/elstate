@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { and, asc, desc, eq, ilike, inArray, isNotNull, notInArray, or, sql, type SQL } from "drizzle-orm";
+import AutoSubmitSelect from "@/components/crm/AutoSubmitSelect";
 import { Badge, Empty, PageHead, ago, input, leadTone, pln, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
@@ -59,24 +60,25 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
         <Link href="/crm/leady/nowy" className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">+ Dodaj</Link>
       </PageHead>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      {/* na telefonie zakładki w jednym przewijanym rzędzie */}
+      <div className="-mx-4 mb-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0">
         {views.map(([k, v]) => (
-          <Link key={k} href={href({ widok: k || undefined })} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${view === k ? "bg-plum-900 text-pearl" : "bg-white text-graphite/70 hover:text-plum-900"}`}>
+          <Link key={k} href={href({ widok: k || undefined })} className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold ${view === k ? "bg-plum-900 text-pearl" : "bg-white text-graphite/70 hover:text-plum-900"}`}>
             {v}
             {k === "przeglad" && review.n > 0 && <span className={`ml-1.5 rounded-full px-1.5 text-xs ${view === k ? "bg-gold-500 text-plum-950" : "bg-gold-500/20 text-plum-900"}`}>{review.n}</span>}
           </Link>
         ))}
       </div>
-      <form className="mb-6 grid max-w-3xl gap-2 sm:grid-cols-[1fr_14rem_auto]">
+      <form className="mb-6 grid max-w-3xl grid-cols-[1fr_8.5rem] gap-2 sm:grid-cols-[1fr_14rem_auto]">
         {view && <input type="hidden" name="widok" value={view} />}
-        <input name="q" defaultValue={sp.q} placeholder="Szukaj: tytuł, telefon, ulica…" className={input} />
-        <select name="zrodlo" defaultValue={sp.zrodlo ?? ""} className={input}>
+        <input name="q" defaultValue={sp.q} type="search" enterKeyHint="search" placeholder="Szukaj: tytuł, telefon, ulica…" className={input} />
+        <AutoSubmitSelect name="zrodlo" defaultValue={sp.zrodlo ?? ""} className={input}>
           <option value="">Każde źródło</option>
           {leadSources.map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
-        </select>
-        <button className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900">Filtruj</button>
+        </AutoSubmitSelect>
+        <button className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900 sm:block">Filtruj</button>
       </form>
 
       {rows.length ? (

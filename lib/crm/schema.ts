@@ -153,6 +153,28 @@ export const audit = pgTable(
   (t) => [index("audit_action_idx").on(t.action, t.createdAt)],
 );
 
+// Ustawienia aplikacji w bazie (np. klucze VAPID do powiadomień push, tworzone same przy pierwszym użyciu)
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: updatedAt(),
+});
+
+// Urządzenia, na których ktoś włączył powiadomienia push z CRM (telefon, laptop)
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    userAgent: text("user_agent"),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("push_endpoint_idx").on(t.endpoint)],
+);
+
 export type User = typeof users.$inferSelect;
 export type ListingRow = typeof listings.$inferSelect;
 export type LeadRow = typeof leads.$inferSelect;

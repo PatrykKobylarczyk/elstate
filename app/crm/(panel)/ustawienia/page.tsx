@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { asc, desc, eq } from "drizzle-orm";
-import { NotifyButton } from "@/components/crm/LeadPing";
+import Link from "next/link";
+import AppSetup from "@/components/crm/AppSetup";
 import { ActionForm, Submit } from "@/components/crm/forms";
 import { Badge, Field, PageHead, btnGhost, card, input, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
@@ -9,7 +10,7 @@ import { db } from "@/lib/crm/db";
 import { auditLabels } from "@/lib/crm/labels";
 import { audit, users } from "@/lib/crm/schema";
 import { blobMode, storageReady } from "@/lib/crm/storage";
-import { changePassword } from "../../auth-actions";
+import { changePassword, logout } from "../../auth-actions";
 import { mailReady } from "@/lib/crm/mail";
 import { createUser, importNbot, resetUser2fa, toggleEmailOtp, toggleUser } from "../actions";
 
@@ -55,7 +56,26 @@ export default async function Ustawienia() {
   return (
     <>
       <PageHead title="Ustawienia" />
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
+        <section id="aplikacja" className={card}>
+          <h2 className="mb-4 font-display text-xl text-plum-900">Aplikacja na telefonie</h2>
+          <AppSetup />
+        </section>
+
+        {/* na telefonie nie ma bocznego menu, więc konto i wylogowanie są tutaj */}
+        <section className={`${card} flex flex-col justify-between gap-4`}>
+          <div>
+            <p className="font-semibold">{me.name}</p>
+            <p className="truncate text-sm text-graphite/55">{me.email}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/" target="_blank" className={btnGhost}>Strona Elstate ↗</Link>
+            <form action={logout}>
+              <button className={btnGhost}>Wyloguj</button>
+            </form>
+          </div>
+        </section>
+
         <section id="nbot" className={`${card} lg:col-span-2`}>
           <h2 className="font-display text-xl text-plum-900">nbot → CRM</h2>
           <p className="mt-1 max-w-3xl text-sm text-graphite/60">
@@ -132,7 +152,7 @@ export default async function Ustawienia() {
           </ActionForm>
         </section>
 
-        <section className={card}>
+        <section id="konto" className={card}>
           <h2 className="mb-4 font-display text-xl text-plum-900">Moje konto</h2>
           <ActionForm action={changePassword} resetOnOk className="grid gap-3">
             <input type="hidden" name="from" value="ustawienia" />
@@ -161,11 +181,6 @@ export default async function Ustawienia() {
               </form>
             )}
             {!mailReady() && <p className="mt-2 text-xs text-graphite/50">Kod na e-mail zadziała po ustawieniu wysyłki maili (RESEND_API_KEY lub SMTP_URL w Vercelu).</p>}
-          </div>
-          <div className="mt-6 border-t border-graphite/10 pt-5">
-            <p className="mb-2 text-sm font-semibold">Powiadomienia o nowych zgłoszeniach</p>
-            <NotifyButton />
-            <p className="mt-2 text-xs text-graphite/50">Działają, gdy CRM jest otwarty w karcie przeglądarki. Licznik w menu odświeża się co minutę.</p>
           </div>
           {/* diagnostyka magazynu zdjęć: tylko nazwy zmiennych, nigdy wartości */}
           {blobMode() ? (

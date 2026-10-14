@@ -1,7 +1,7 @@
 // Wspólne klocki wyglądu panelu CRM (bez JavaScriptu po stronie przeglądarki).
 
 export const input =
-  "w-full rounded-xl border border-graphite/15 bg-white px-3.5 py-2.5 text-[15px] text-graphite outline-none transition placeholder:text-graphite/35 focus:border-plum-700 focus:ring-2 focus:ring-plum-700/15";
+  "w-full rounded-xl border border-graphite/15 bg-white px-3.5 py-2.5 text-base text-graphite outline-none md:text-[15px] transition placeholder:text-graphite/35 focus:border-plum-700 focus:ring-2 focus:ring-plum-700/15";
 export const btn =
   "inline-flex items-center justify-center gap-2 rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl transition hover:bg-plum-700 disabled:opacity-50";
 export const btnGhost =
@@ -25,7 +25,7 @@ export function PageHead({ title, sub, children }: { title: string; sub?: React.
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="font-display text-3xl text-plum-900 md:text-4xl">{title}</h1>
-        {sub && <p className="mt-1 text-sm text-graphite/55">{sub}</p>}
+        {sub && <p className="mt-1 hidden text-sm text-graphite/55 md:block">{sub}</p>}
       </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>

@@ -37,17 +37,17 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<{
       <PageHead title="Oferty" sub="Oferty ze statusem „Aktywna” i „Rezerwacja” są na stronie elstate.pl.">
         <Link href="/crm/oferty/nowa" className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">+ Nowa oferta</Link>
       </PageHead>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0">
         {tabs.map(([k, v]) => (
-          <Link key={k} href={k ? `/crm/oferty?status=${k}` : "/crm/oferty"} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${(sp.status ?? "") === k ? "bg-plum-900 text-pearl" : "bg-white text-graphite/70 hover:text-plum-900"}`}>
+          <Link key={k} href={k ? `/crm/oferty?status=${k}` : "/crm/oferty"} className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold ${(sp.status ?? "") === k ? "bg-plum-900 text-pearl" : "bg-white text-graphite/70 hover:text-plum-900"}`}>
             {v}
           </Link>
         ))}
       </div>
       <form className="mb-6 grid max-w-xl gap-2 sm:grid-cols-[1fr_auto]">
         {sp.status && <input type="hidden" name="status" value={sp.status} />}
-        <input name="q" defaultValue={sp.q} placeholder="Szukaj: tytuł, dzielnica, ulica…" className={input} />
-        <button className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900">Szukaj</button>
+        <input name="q" defaultValue={sp.q} type="search" enterKeyHint="search" placeholder="Szukaj: tytuł, dzielnica, ulica…" className={input} />
+        <button className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900 sm:block">Szukaj</button>
       </form>
 
       {total === 0 && (

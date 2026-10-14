@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AutoSubmitSelect from "@/components/crm/AutoSubmitSelect";
 import { and, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { Badge, Empty, PageHead, input } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
@@ -30,13 +31,13 @@ export default async function Klienci({ searchParams }: { searchParams: Promise<
       <PageHead title="Klienci" sub="Sprzedający, kupujący, wynajmujący i najemcy.">
         <Link href="/crm/klienci/nowy" className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">+ Nowy klient</Link>
       </PageHead>
-      <form className="mb-6 grid max-w-3xl gap-2 sm:grid-cols-[1fr_14rem_auto]">
-        <input name="q" defaultValue={sp.q} placeholder="Szukaj: nazwisko, telefon, e-mail…" className={input} />
-        <select name="rodzaj" defaultValue={sp.rodzaj ?? ""} className={input}>
+      <form className="mb-6 grid max-w-3xl grid-cols-[1fr_8.5rem] gap-2 sm:grid-cols-[1fr_14rem_auto]">
+        <input name="q" defaultValue={sp.q} type="search" enterKeyHint="search" placeholder="Szukaj: nazwisko, telefon, e-mail…" className={input} />
+        <AutoSubmitSelect name="rodzaj" defaultValue={sp.rodzaj ?? ""} className={input}>
           <option value="">Wszyscy</option>
           {clientKinds.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <button className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900">Filtruj</button>
+        </AutoSubmitSelect>
+        <button className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold hover:text-plum-900 sm:block">Filtruj</button>
       </form>
       {rows.length ? (
         <ul className="grid gap-2 md:grid-cols-2">

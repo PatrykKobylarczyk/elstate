@@ -15,6 +15,13 @@
       "when": 1791789083761,
       "tag": "0001_email_otp",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791973807217,
+      "tag": "0002_push",
+      "breakpoints": true
     }
   ]
 }

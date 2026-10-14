@@ -2,6 +2,7 @@ import "server-only";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { parseNbotEmail } from "./nbot";
+import { notify } from "./push";
 import { audit, leads } from "./schema";
 
 // Zapis zgłoszeń do CRM: z maili nbot i z formularza na stronie.
@@ -41,6 +42,15 @@ export async function ingestNbot(mail: { subject?: string; text?: string; html?:
     else added++;
   }
   await d.insert(audit).values({ action: "lead_import", userId: userId ?? null, subject: mail.subject?.slice(0, 200), meta: { added, repeated, from: mail.from ?? null } });
+  // powiadomienie tylko o nowych ogłoszeniach z automatu; ręcznie wklejone dodaje się samemu
+  if (!manual && added > 0) {
+    await notify({
+      title: "Z nbota do przejrzenia",
+      body: added === 1 ? parsed.find((p) => p.title)?.title ?? "Nowe ogłoszenie" : `Nowe ogłoszenia: ${added}`,
+      url: "/crm/leady?widok=przeglad",
+      tag: "elstate-nbot",
+    });
+  }
   return { added, repeated, total: parsed.length };
 }
 
@@ -57,4 +67,5 @@ export async function ingestContactForm(f: { name: string; reach: string; subjec
     phone,
     message: f.message.slice(0, 5000),
   });
+  await notify({ title: `Wiadomość ze strony: ${f.name.slice(0, 60)}`, body: (f.subject ? `${f.subject}: ` : "") + f.message.slice(0, 140), url: "/crm/leady" });
 }

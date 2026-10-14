@@ -1,0 +1,23 @@
+{
+  "id": "/crm",
+  "name": "Elstate CRM",
+  "short_name": "Elstate",
+  "description": "Zgłoszenia, oferty i klienci Elstate w telefonie.",
+  "lang": "pl",
+  "start_url": "/crm",
+  "scope": "/crm",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#320920",
+  "theme_color": "#320920",
+  "icons": [
+    { "src": "/crm-icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/crm-icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/crm-icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Do kontaktu", "url": "/crm/leady", "icons": [{ "src": "/crm-icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Z nbota do przejrzenia", "url": "/crm/leady?widok=przeglad", "icons": [{ "src": "/crm-icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Dodaj z nbota", "url": "/crm/leady/z-nbota", "icons": [{ "src": "/crm-icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

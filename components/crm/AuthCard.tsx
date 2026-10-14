@@ -7,7 +7,7 @@ const panorama = { lodz: "/hero/panorama.webp", gdansk: "/hero/panorama-gdansk.w
 export default async function AuthCard({ title, sub, children }: { title: string; sub?: React.ReactNode; children: React.ReactNode }) {
   const region = await visitorRegion();
   return (
-    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-plum-900 px-4 py-12">
+    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-plum-900 px-4 pb-[max(3rem,env(safe-area-inset-bottom))] pt-[max(3rem,calc(env(safe-area-inset-top)+1.5rem))]">
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[55vh] md:h-[70vh]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={panorama[region]} alt="" className="skyline h-full w-full object-cover object-[78%_100%] opacity-60 lg:object-contain lg:object-bottom" />

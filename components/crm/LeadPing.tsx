@@ -15,6 +15,9 @@ export default function LeadPing({ initial, latest }: { initial: number; latest:
   useEffect(() => {
     const base = document.title.replace(/^\(\d+\)\s*/, "");
     document.title = count ? `(${count}) ${base}` : base;
+    // plakietka z liczbą na ikonie zainstalowanej aplikacji (telefon, Mac, Windows)
+    const nav = navigator as Navigator & { setAppBadge?: (n: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
+    (count ? nav.setAppBadge?.(count) : nav.clearAppBadge?.())?.catch(() => {});
   }, [count]);
 
   useEffect(() => {
@@ -30,7 +33,9 @@ export default function LeadPing({ initial, latest }: { initial: number; latest:
           last.current = j.latest;
           setFresh((f) => f + added);
           router.refresh();
-          if ("Notification" in window && Notification.permission === "granted") {
+          const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration("/crm") : undefined;
+          const pushOn = Boolean(await reg?.pushManager?.getSubscription());
+          if (!pushOn && "Notification" in window && Notification.permission === "granted") {
             new Notification("Elstate CRM", { body: added === 1 ? "Nowe zgłoszenie do kontaktu" : `Nowe zgłoszenia do kontaktu: ${added}`, tag: "elstate-leady" });
           }
         }
@@ -48,13 +53,13 @@ export default function LeadPing({ initial, latest }: { initial: number; latest:
 
   return (
     <>
-      {count > 0 && <span className="ml-auto rounded-full bg-gold-500 px-2 py-0.5 text-xs font-bold text-plum-950">{count}</span>}
+      {count > 0 && <span className="absolute left-[calc(50%+0.4rem)] top-1 min-w-5 rounded-full bg-gold-500 px-1.5 py-0.5 text-center text-[10px] leading-none font-bold text-plum-950 lg:static lg:ml-auto lg:px-2 lg:text-xs">{count}</span>}
       {fresh > 0 &&
         createPortal(
         <a
           href="/crm/leady"
           onClick={() => setFresh(0)}
-          className="fixed right-4 bottom-4 z-50 flex items-center gap-3 rounded-2xl bg-plum-900 px-5 py-4 text-sm font-semibold text-pearl shadow-[0_20px_50px_rgba(29,4,18,0.35)]"
+          className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 z-50 justify-center lg:left-auto lg:bottom-4 lg:justify-start flex items-center gap-3 rounded-2xl bg-plum-900 px-5 py-4 text-sm font-semibold text-pearl shadow-[0_20px_50px_rgba(29,4,18,0.35)]"
         >
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-gold-500" />
           {fresh === 1 ? "Nowe zgłoszenie do kontaktu" : `Nowe zgłoszenia do kontaktu: ${fresh}`}
@@ -62,18 +67,5 @@ export default function LeadPing({ initial, latest }: { initial: number; latest:
           document.body,
         )}
     </>
-  );
-}
-
-export function NotifyButton() {
-  const [state, setState] = useState<string>("");
-  useEffect(() => setState("Notification" in window ? Notification.permission : "brak"), []);
-  if (!state || state === "brak") return null;
-  if (state === "granted") return <p className="text-sm text-emerald-800">Powiadomienia w tej przeglądarce są włączone.</p>;
-  if (state === "denied") return <p className="text-sm text-graphite/60">Powiadomienia są zablokowane w ustawieniach przeglądarki.</p>;
-  return (
-    <button type="button" onClick={() => Notification.requestPermission().then(setState)} className="inline-flex rounded-full border border-graphite/15 bg-white px-4 py-2 text-sm font-semibold hover:border-plum-700">
-      Włącz powiadomienia w tej przeglądarce
-    </button>
   );
 }
