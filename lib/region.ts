@@ -2,8 +2,8 @@ import { cookies, headers } from "next/headers";
 import { REGION_COOKIE, isRegion, type Region } from "./region-cookie";
 
 // Panorama w hero zależy od tego, skąd ktoś wchodzi: Pomorze (do 150 km od Gdańska) widzi Gdańsk, wszędzie indziej Łódź.
-// Wybór odwiedzającego wygrywa z lokalizacją: przełącznik w hero (?panorama=…) i kafle miast (?miasto=…)
-// zapisują go w ciasteczku (middleware.ts), bo z samego IP często nie da się poznać miasta.
+// Wybór odwiedzającego wygrywa z lokalizacją: przełącznik w hero (?panorama=…) zapisuje go w ciasteczku
+// (middleware.ts), bo z samego IP często nie da się poznać miasta.
 // Lokalizację podaje Vercel w nagłówkach x-vercel-ip-* (przybliżona, z adresu IP; bez pytania o zgodę).
 // Same współrzędne bywają mylące: wielu operatorów (zwłaszcza komórkowych) ma w bazach IP punkt w Warszawie
 // albo środek Polski, więc najpierw patrzymy na województwo i miasto, a odległość jest dopiero trzecim sygnałem.
