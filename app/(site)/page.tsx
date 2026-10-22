@@ -47,6 +47,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             <Link href="/oferty" className="btn-light" data-cursor="Oferty">Zobacz oferty <Arrow /></Link>
             <Link href="/#kontakt" data-topic="wycena" className="btn-ghost text-pearl">Otrzymaj wycenę</Link>
           </div>
+          {/* lokalizacja z IP bywa błędna (np. Warszawa zamiast Gdańska), więc panoramę można wybrać; wybór zostaje zapamiętany */}
+          <nav aria-label="Panorama miasta" className="mt-6 flex animate-rise items-center gap-3 text-xs uppercase tracking-[0.2em] text-pearl/50 [animation-delay:360ms]">
+            {([["lodz", "Łódź"], ["gdansk", "Trójmiasto"]] as const).map(([r, label], i) => (
+              <span key={r} className="flex items-center gap-3">
+                {i > 0 && <span aria-hidden>·</span>}
+                <Link href={`/?panorama=${r}`} scroll={false} aria-current={region === r ? "true" : undefined} className={region === r ? "text-gold-300" : "transition-colors hover:text-pearl"}>
+                  {label}
+                </Link>
+              </span>
+            ))}
+          </nav>
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-[96rem] px-3 pb-6 md:px-10 md:pb-10 lg:pb-[4vh]">

@@ -1,12 +1,16 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { REGION_COOKIE, isRegion, type Region } from "./region-cookie";
 
 // Panorama w hero zależy od tego, skąd ktoś wchodzi: Pomorze (do 150 km od Gdańska) widzi Gdańsk, wszędzie indziej Łódź.
+// Wybór odwiedzającego wygrywa z lokalizacją: przełącznik w hero (?panorama=…) zapisuje go w ciasteczku
+// (middleware.ts), bo z samego IP często nie da się poznać miasta.
 // Lokalizację podaje Vercel w nagłówkach x-vercel-ip-* (przybliżona, z adresu IP; bez pytania o zgodę).
 // Same współrzędne bywają mylące: wielu operatorów (zwłaszcza komórkowych) ma w bazach IP punkt w Warszawie
 // albo środek Polski, więc najpierw patrzymy na województwo i miasto, a odległość jest dopiero trzecim sygnałem.
-// Lokalnie i gdy nagłówków brak: Łódź. Do sprawdzenia ręcznie: /?panorama=gdansk lub /?panorama=lodz,
+// Lokalnie i gdy nagłówków brak: Łódź. Ręcznie: /?panorama=gdansk lub /?panorama=lodz (zostaje zapamiętane),
 // a co widzi Vercel: /api/region.
-export type Region = "lodz" | "gdansk";
+
+export type { Region };
 
 const GDANSK = { lat: 54.352, lon: 18.6466 };
 const RADIUS_KM = 150;
@@ -55,6 +59,8 @@ export function regionFromGeo(g: GeoHeaders): Region {
 }
 
 export async function visitorRegion(override?: string): Promise<Region> {
-  if (override === "gdansk" || override === "lodz") return override;
+  if (isRegion(override)) return override;
+  const saved = (await cookies()).get(REGION_COOKIE)?.value;
+  if (isRegion(saved)) return saved;
   return regionFromGeo(await geoHeaders());
 }
