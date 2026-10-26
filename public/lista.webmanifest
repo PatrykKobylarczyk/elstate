@@ -1,0 +1,18 @@
+{
+  "id": "/lista",
+  "name": "Lista",
+  "short_name": "Lista",
+  "description": "Wspólna lista rzeczy do zrobienia.",
+  "lang": "pl",
+  "start_url": "/lista",
+  "scope": "/lista",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#320920",
+  "theme_color": "#320920",
+  "icons": [
+    { "src": "/lista-icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/lista-icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/lista-icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
