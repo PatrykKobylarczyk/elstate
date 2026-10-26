@@ -22,12 +22,15 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci --ignore-scripts
       - run: node scripts/migrate.mjs
-      - run: node scripts/rcn-import.mjs 1003 1063 1061
+      - run: |
+          for id in 1061069 1003011 1003022 1003033 1003034 1003035 1010012; do curl -sS "https://uldk.gugik.gov.pl/?request=GetCommuneById&id=$id&result=teryt,commune,county" ; echo " <- $id"; done
+      - run: node scripts/rcn-import.mjs 1003 1063 1010
       - name: Sanity
         run: |
           q() { psql "$DATABASE_URL" -c "$1"; }
           q "select powiat, rodzaj, count(*), count(cena_m2) m2, count(lat) geo, round(percentile_cont(0.5) within group (order by cena_m2)::numeric) med, min(data), max(data) from rcn_transakcje group by 1,2 order by 1,2"
           q "select miejscowosc, count(*) from rcn_transakcje where rodzaj='mieszkanie' group by 1 order by 2 desc limit 15"
+          q "select gmina, count(*), count(miejscowosc) from rcn_transakcje group by 1 order by 2 desc limit 40"
           q "select to_char(data,'YYYY') y, count(*), round(percentile_cont(0.5) within group (order by cena_m2)::numeric) from rcn_transakcje where rodzaj='mieszkanie' and teryt_powiat='1061' group by 1 order by 1"
           q "select uwagi, count(*) from rcn_transakcje group by 1 order by 2 desc limit 15"
           q "select funkcja, rodzaj, count(*) from rcn_transakcje group by 1,2 order by 3 desc limit 25"

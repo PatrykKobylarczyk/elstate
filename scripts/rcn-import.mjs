@@ -98,13 +98,33 @@ const TRANS = { sprzedazBezprzetargowa: "sprzedaż bezprzetargowa", sprzedazZBon
 const camel = (s) => (s ? s.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase() : null);
 const RYNEK = { rynekPierwotny: "pierwotny", rynekWtorny: "wtorny" };
 
+// adres w RCN: „MSC:Łódź;UL:Piotrkowska;NR_PORZ:25” (część powiatów go nie wypełnia)
+const title = (v) => (v && v === v.toUpperCase() && /\p{Lu}{3}/u.test(v) ? v.toLowerCase().replace(/(^|[\s-])\p{Ll}/gu, (m) => m.toUpperCase()) : v);
 function adres(s) {
   const a = {};
   for (const part of String(s ?? "").split(";")) {
     const i = part.indexOf(":");
     if (i > 0) a[part.slice(0, i).trim()] = part.slice(i + 1).trim();
   }
-  return { miejscowosc: a.MSC || null, ulica: a.UL || null, numer: a.NR_PORZ || null };
+  const msc = a.MSC && a.MSC !== "-" ? a.MSC : null;
+  return { miejscowosc: title(msc), ulica: title(a.UL) || null, numer: a.NR_PORZ || null };
+}
+
+// nazwy gmin z usługi ULDK (GUGiK) po kodzie TERYT, z pamięcią podręczną na czas importu
+const SUFFIX = { 2: " (gmina wiejska)", 4: " (miasto)", 5: " (obszar wiejski)" };
+const gminy = new Map();
+async function gminaName(code) {
+  if (!code) return null;
+  if (!gminy.has(code)) {
+    let name = null;
+    try {
+      const res = await fetch(`https://uldk.gugik.gov.pl/?request=GetCommuneById&id=${code}&result=commune`, { signal: AbortSignal.timeout(20000) });
+      const lines = (await res.text()).trim().split("\n");
+      if (lines[0].trim() === "0" && lines[1]) name = lines[1].split("|")[0].trim() + (SUFFIX[code[6]] ?? "");
+    } catch {}
+    gminy.set(code, name);
+  }
+  return gminy.get(code);
 }
 
 const pos = (v) => (typeof v === "number" && v > 1 ? v : null);
@@ -130,7 +150,9 @@ function m2(cena, pow, fair, lo, hi) {
 
 function readPowiat(file, teryt) {
   const db = new DatabaseSync(file, { readOnly: true });
-  const all = (t) => db.prepare(`select * from "${t}" where dok_data >= ?`).all(OD);
+  // daty z przyszłości to literówki w rejestrze (np. 2121 zamiast 2021)
+  const until = new Date(Date.now() + 31 * 864e5).toISOString().slice(0, 10);
+  const all = (t) => db.prepare(`select * from "${t}" where dok_data >= ? and dok_data <= ?`).all(OD, until);
   const out = new Map();
   const base = (r) => ({
     terytPowiat: String(teryt),
@@ -303,6 +325,11 @@ async function main() {
     try {
       const file = await download(teryt, dir);
       const rows = readPowiat(file, teryt).map(snake);
+      // miasta na prawach powiatu: miejscowość znana, gdy rejestr nie podaje adresu
+      for (const r of rows) {
+        r.gmina = (await gminaName(r.gmina)) ?? (teryt > 1060 ? POWIATY[teryt] : r.gmina);
+        if (!r.miejscowosc && teryt > 1060) r.miejscowosc = POWIATY[teryt];
+      }
       await sql.begin(async (tx) => {
         await tx`delete from rcn_transakcje where teryt_powiat = ${String(teryt)}`;
         for (let i = 0; i < rows.length; i += 1000) await tx`insert into rcn_transakcje ${tx(rows.slice(i, i + 1000), COLS)}`;
