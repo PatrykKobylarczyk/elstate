@@ -164,7 +164,7 @@ export default function ListaApp({ initial }: { initial: ListState }) {
             enterKeyHint="send"
             className="max-h-40 min-h-12 flex-1 resize-none rounded-2xl bg-pearl px-4 py-3 text-base text-graphite outline-none placeholder:text-graphite/40"
           />
-          <button type="submit" disabled={!text.trim()} aria-label="Dodaj" className="grid size-12 shrink-0 place-items-center rounded-full bg-gold-500 text-2xl font-semibold text-plum-950 transition disabled:opacity-40">
+          <button type="submit" disabled={!text.trim()} aria-label="Dodaj" className="grid size-12 shrink-0 place-items-center rounded-full bg-gold-500 text-2xl font-semibold text-plum-950 transition disabled:bg-pearl/15 disabled:text-pearl/40">
             +
           </button>
         </form>
