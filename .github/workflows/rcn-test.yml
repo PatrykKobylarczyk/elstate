@@ -1,0 +1,41 @@
+name: RCN test
+on:
+  push:
+    branches: [claude/project-thread-3riew7]
+    paths: [.github/workflows/rcn-test.yml, scripts/rcn-import.mjs]
+concurrency: { group: rcn-test, cancel-in-progress: true }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      pg:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: pg }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:pg@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: node scripts/migrate.mjs
+      - run: node scripts/rcn-import.mjs 1003 1063 1061
+      - name: Sanity
+        run: |
+          q() { psql "$DATABASE_URL" -c "$1"; }
+          q "select powiat, rodzaj, count(*), count(cena_m2) m2, count(lat) geo, round(percentile_cont(0.5) within group (order by cena_m2)::numeric) med, min(data), max(data) from rcn_transakcje group by 1,2 order by 1,2"
+          q "select miejscowosc, count(*) from rcn_transakcje where rodzaj='mieszkanie' group by 1 order by 2 desc limit 15"
+          q "select to_char(data,'YYYY') y, count(*), round(percentile_cont(0.5) within group (order by cena_m2)::numeric) from rcn_transakcje where rodzaj='mieszkanie' and teryt_powiat='1061' group by 1 order by 1"
+          q "select uwagi, count(*) from rcn_transakcje group by 1 order by 2 desc limit 15"
+          q "select funkcja, rodzaj, count(*) from rcn_transakcje group by 1,2 order by 3 desc limit 25"
+          q "select min(lat),max(lat),min(lng),max(lng) from rcn_transakcje"
+          q "select * from rcn_transakcje where rodzaj='dom' and cena_m2 is not null limit 3"
+          q "select * from rcn_transakcje where rodzaj='dzialka' and cena_m2 is not null limit 3"
+      - name: Próbka do testów lokalnych
+        run: |
+          psql "$DATABASE_URL" -c "\copy (select * from (select * from rcn_transakcje where data >= '2023-01-01' order by md5(id) limit 4000) s) to 'sample.csv' csv header"
+          gzip -9 sample.csv && ls -la sample.csv.gz
+          echo "BEGIN_SAMPLE"; base64 -w 0 sample.csv.gz; echo; echo "END_SAMPLE"

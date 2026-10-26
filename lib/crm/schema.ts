@@ -1,7 +1,7 @@
 // Schemat bazy CRM (Postgres, Drizzle). Zmiany: edytuj ten plik i uruchom `npm run db:generate`,
 // migracje w drizzle/ wykonują się same przy buildzie (scripts/migrate.mjs).
 import { sql } from "drizzle-orm";
-import { boolean, doublePrecision, index, integer, jsonb, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
@@ -211,9 +211,51 @@ export const listaPush = pgTable("lista_push", {
   createdAt: createdAt(),
 });
 
+// Ceny transakcyjne z Rejestru Cen Nieruchomości (Geoportal, pliki powiatów woj. łódzkiego).
+// Jeden wiersz to jeden lokal, budynek albo działka z aktu notarialnego; wypełnia go scripts/rcn-import.mjs.
+// id = źródłowy identyfikator obiektu, więc ponowny import tylko nadpisuje wiersze.
+export const rcnTransakcje = pgTable(
+  "rcn_transakcje",
+  {
+    id: text("id").primaryKey(),
+    // mieszkanie | lokal | dom | budynek | dzialka (lokal = użytkowy i inny, dom = budynek mieszkalny, działka = grunt niezabudowany)
+    rodzaj: text("rodzaj").notNull(),
+    terytPowiat: text("teryt_powiat").notNull(),
+    powiat: text("powiat").notNull(),
+    gmina: text("gmina"),
+    miejscowosc: text("miejscowosc"),
+    ulica: text("ulica"),
+    numer: text("numer"),
+    data: date("data", { mode: "string" }).notNull(),
+    // pierwotny | wtorny
+    rynek: text("rynek"),
+    cena: doublePrecision("cena").notNull(),
+    // powierzchnia użytkowa lokalu/budynku albo pole działki, m²
+    pow: real("pow"),
+    // pole działki pod domem/budynkiem, m²
+    powDzialki: real("pow_dzialki"),
+    // pusta, gdy cena nie daje uczciwej ceny za m² (udział, kilka lokali w jednej cenie, sprzedaż z bonifikatą itp.)
+    cenaM2: real("cena_m2"),
+    pokoje: integer("pokoje"),
+    pietro: integer("pietro"),
+    funkcja: text("funkcja"),
+    // zastrzeżenia do ceny, np. „udział 1/2”, „sprzedaż bezprzetargowa”
+    uwagi: text("uwagi"),
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+    importedAt: timestamp("imported_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("rcn_rodzaj_data_idx").on(t.rodzaj, t.data),
+    index("rcn_powiat_idx").on(t.terytPowiat, t.data),
+    index("rcn_miejscowosc_idx").on(t.miejscowosc),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type ListingRow = typeof listings.$inferSelect;
 export type LeadRow = typeof leads.$inferSelect;
 export type ClientRow = typeof clients.$inferSelect;
 export type ListaItem = typeof listaItems.$inferSelect;
 export type ListaDevice = typeof listaDevices.$inferSelect;
+export type RcnRow = typeof rcnTransakcje.$inferSelect;
