@@ -1,0 +1,44 @@
+name: RCN probe
+on:
+  push:
+    branches: [claude/project-thread-3riew7]
+    paths: [.github/workflows/rcn-probe.yml]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Listing
+        run: |
+          set -x
+          curl -sSL -m 60 https://opendata.geoportal.gov.pl/latest_exports/rcn_transakcje_ceny/ | head -c 4000 || true
+          curl -sSL -m 60 https://opendata.geoportal.gov.pl/latest_exports/rcn_transakcje_ceny/GPKG/ | grep -o 'href="[^"]*"' | head -200 || true
+          for d in GeoParquet GPARQUET PARQUET; do curl -sSL -m 60 -o /dev/null -w "$d %{http_code}\n" https://opendata.geoportal.gov.pl/latest_exports/rcn_transakcje_ceny/$d/; done
+      - name: Sizes
+        run: |
+          for t in 1001 1002 1003 1004 1005 1006 1007 1008 1009 1010 1011 1012 1013 1014 1015 1016 1017 1018 1019 1020 1021 1061 1062 1063 10; do
+            curl -sSIL -m 60 https://opendata.geoportal.gov.pl/latest_exports/rcn_transakcje_ceny/GPKG/${t}_transakcje_ceny.gpkg.zip | grep -iE '^(HTTP|content-length|last-modified)' | tr '\n' ' '; echo " <- $t"
+          done
+      - name: Schema
+        run: |
+          sudo apt-get install -y sqlite3 >/dev/null 2>&1 || true
+          for t in 1003 1061; do
+            curl -sSL -m 600 -o $t.zip https://opendata.geoportal.gov.pl/latest_exports/rcn_transakcje_ceny/GPKG/${t}_transakcje_ceny.gpkg.zip
+            unzip -o $t.zip -d $t; ls -la $t
+            f=$(ls $t/*.gpkg | head -1)
+            sqlite3 "$f" "select table_name, data_type, srs_id from gpkg_contents;"
+            sqlite3 "$f" "select srs_id, organization, organization_coordsys_id from gpkg_spatial_ref_sys;"
+            for tb in $(sqlite3 "$f" "select table_name from gpkg_contents;"); do
+              echo "=== $tb"; sqlite3 "$f" "select count(*) from \"$tb\";"
+              sqlite3 "$f" "pragma table_info(\"$tb\");"
+              sqlite3 -header -line "$f" "select * from \"$tb\" limit 3;" | grep -v -i '^ *geom' | head -150
+            done
+          done
+          f=$(ls 1061/*.gpkg | head -1)
+          for tb in $(sqlite3 "$f" "select table_name from gpkg_contents;"); do
+            for c in $(sqlite3 "$f" "select name from pragma_table_info('$tb') where name like '%rodzaj%' or name like '%funkcja%' or name like '%rynek%' or name like '%rynku%' or name like '%typ%' or name like '%udzial%' or name like '%waluta%';"); do
+              echo "--- $tb.$c"; sqlite3 "$f" "select \"$c\", count(*) from \"$tb\" group by 1 order by 2 desc limit 25;"
+            done
+            for c in $(sqlite3 "$f" "select name from pragma_table_info('$tb') where name like '%data%';"); do
+              echo "--- $tb.$c range"; sqlite3 "$f" "select min(\"$c\"), max(\"$c\"), substr(\"$c\",1,4) y from \"$tb\" group by y order by y desc limit 15;"
+            done
+          done
