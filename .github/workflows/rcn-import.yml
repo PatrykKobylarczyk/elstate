@@ -1,0 +1,31 @@
+# Import cen transakcyjnych z Rejestru Cen Nieruchomości (woj. łódzkie) do bazy CRM.
+# Raz w miesiącu i ręcznie (Actions → Import cen RCN → Run workflow). Wymaga sekretu DATABASE_URL (ten sam co w Vercelu).
+name: Import cen RCN
+on:
+  schedule:
+    - cron: "0 3 5 * *"
+  workflow_dispatch:
+    inputs:
+      powiaty:
+        description: "Kody TERYT powiatów oddzielone spacją (puste = całe województwo), np. 1061 1020"
+        required: false
+        default: ""
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Migracje bazy
+        run: node scripts/migrate.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Import
+        run: node scripts/rcn-import.mjs ${{ github.event.inputs.powiaty }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

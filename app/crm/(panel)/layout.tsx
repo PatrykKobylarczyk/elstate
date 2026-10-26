@@ -31,6 +31,7 @@ export default async function Panel({ children }: { children: React.ReactNode })
             <NavLink href="/crm/leady" icon="inbox" label="Do kontaktu" short="Zgłoszenia" badge={<LeadPing initial={inbox.count} latest={inbox.latest} />} />
             <NavLink href="/crm/oferty" icon="building" label="Oferty" />
             <NavLink href="/crm/klienci" icon="users" label="Klienci" />
+            <NavLink href="/crm/ceny" icon="chart" label="Ceny transakcyjne" short="Ceny" />
             <NavLink href="/crm/ustawienia" icon="settings" label="Ustawienia" short="Więcej" />
           </nav>
           <div className="mt-auto hidden border-t border-pearl/10 px-2 pt-4 lg:block">
