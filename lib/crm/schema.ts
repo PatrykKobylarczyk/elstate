@@ -222,6 +222,7 @@ export const rcnTransakcje = pgTable(
     rodzaj: text("rodzaj").notNull(),
     terytPowiat: text("teryt_powiat").notNull(),
     powiat: text("powiat").notNull(),
+    // nazwa gminy (w Łodzi dzielnica-delegatura), z TERYT przez ULDK
     gmina: text("gmina"),
     miejscowosc: text("miejscowosc"),
     ulica: text("ulica"),

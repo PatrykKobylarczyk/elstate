@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, gte, ilike, lte, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, lte, or, sql, type SQL } from "drizzle-orm";
 import { db } from "./db";
 import { rcnTransakcje as t } from "./schema";
 
@@ -46,7 +46,7 @@ export const RYNKI: [string, string][] = [
 ];
 
 // porównanie grupuje po wybranej kolumnie
-export const GRUPY = { miejscowosc: "Miejscowość", powiat: "Powiat", ulica: "Ulica", pokoje: "Liczba pokoi", rok: "Rok" } as const;
+export const GRUPY = { powiat: "Powiat", gmina: "Gmina / dzielnica", miejscowosc: "Miejscowość", ulica: "Ulica", pokoje: "Liczba pokoi", rok: "Rok" } as const;
 export type Grupa = keyof typeof GRUPY;
 
 export const KEYS = ["rodzaj", "powiat", "miejscowosc", "ulica", "rynek", "powOd", "powDo", "cenaOd", "cenaDo", "m2Od", "m2Do", "od", "do", "pokoje", "grupa", "strona"] as const;
@@ -77,7 +77,7 @@ export function normalize(sp: Record<string, string | string[] | undefined>): Ce
     q.od = d.toISOString().slice(0, 7);
   }
   if (q.do && !isDate(q.do)) delete q.do;
-  if (!q.grupa || !(q.grupa in GRUPY)) q.grupa = q.miejscowosc ? "ulica" : q.powiat ? "miejscowosc" : "powiat";
+  if (!q.grupa || !(q.grupa in GRUPY)) q.grupa = q.ulica ? "rok" : q.miejscowosc ? "ulica" : q.powiat ? "gmina" : "powiat";
   return q;
 }
 
@@ -85,7 +85,7 @@ export function whereOf(q: CenyQuery): SQL | undefined {
   const w: (SQL | undefined)[] = [];
   if (q.rodzaj && q.rodzaj !== "wszystkie") w.push(eq(t.rodzaj, q.rodzaj));
   if (q.powiat) w.push(eq(t.terytPowiat, q.powiat));
-  if (q.miejscowosc) w.push(ilike(t.miejscowosc, `${q.miejscowosc}%`));
+  if (q.miejscowosc) w.push(or(ilike(t.miejscowosc, `${q.miejscowosc}%`), ilike(t.gmina, `${q.miejscowosc}%`)));
   if (q.ulica) w.push(ilike(t.ulica, `%${q.ulica}%`));
   if (q.rynek) w.push(eq(t.rynek, q.rynek));
   const range = (col: typeof t.pow | typeof t.cena | typeof t.cenaM2, lo?: number, hi?: number) => {
@@ -137,7 +137,8 @@ export async function trend(q: CenyQuery) {
 }
 
 const groupCol: Record<Grupa, SQL> = {
-  miejscowosc: sql`coalesce(${t.miejscowosc}, '(brak)')`,
+  gmina: sql`coalesce(${t.gmina}, '(brak)')`,
+  miejscowosc: sql`coalesce(${t.miejscowosc}, '(brak adresu)')`,
   powiat: sql`${t.powiat}`,
   ulica: sql`coalesce(${t.ulica}, '(bez ulicy)')`,
   pokoje: sql`coalesce(${t.pokoje}::text, '?')`,

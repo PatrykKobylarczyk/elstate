@@ -28,9 +28,11 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
   const [imp, s, tr, cmp, list, pts] = await Promise.all([lastImport(), summary(q), trend(q), compare(q), rows(q), points(q)]);
   const page = Math.max(1, Number(q.strona) || 1);
   const isLand = q.rodzaj === "dzialka";
+  const extra = Boolean(q.rynek || q.powOd || q.powDo || q.m2Od || q.m2Do || q.cenaOd || q.cenaDo || q.do || q.pokoje);
   const groupBy = (nazwa: string): CenyQuery | null => {
-    if (q.grupa === "powiat") return { powiat: POWIATY.find(([, n]) => n === nazwa)?.[0], grupa: "miejscowosc", strona: "" };
-    if (q.grupa === "miejscowosc") return { miejscowosc: nazwa, grupa: "ulica", strona: "" };
+    if (q.grupa === "powiat") return { powiat: POWIATY.find(([, n]) => n === nazwa)?.[0], grupa: "gmina", strona: "" };
+    if (q.grupa === "gmina" && !nazwa.startsWith("(")) return { miejscowosc: nazwa, grupa: "ulica", strona: "" };
+    if (q.grupa === "miejscowosc" && !nazwa.startsWith("(")) return { miejscowosc: nazwa, grupa: "ulica", strona: "" };
     if (q.grupa === "ulica" && !nazwa.startsWith("(")) return { ulica: nazwa, grupa: "rok", strona: "" };
     return null;
   };
@@ -51,7 +53,7 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
     <>
       <PageHead
         title="Ceny transakcyjne"
-        sub={<>Rejestr Cen Nieruchomości, woj. łódzkie · {imp.n.toLocaleString("pl-PL")} transakcji · import {when(imp.at, false)}</>}
+        sub={<>Rejestr Cen Nieruchomości, woj. łódzkie · {imp.n.toLocaleString("pl-PL")} transakcji · import {when(imp.at ? new Date(imp.at) : null, false)}</>}
       />
 
       {/* zwykły formularz GET: adres strony to zapisany widok, można go wysłać komuś z zespołu */}
@@ -69,54 +71,61 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
             {POWIATY.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </AutoSubmitSelect>
         </Field>
-        <Field label="Miejscowość">
+        <Field label="Miejscowość lub gmina">
           <input name="miejscowosc" defaultValue={q.miejscowosc} placeholder="np. Pabianice" className={input} />
         </Field>
         <Field label="Ulica">
           <input name="ulica" defaultValue={q.ulica} placeholder="np. Piotrkowska" className={input} />
         </Field>
-        <Field label="Rynek">
-          <AutoSubmitSelect name="rynek" defaultValue={q.rynek ?? ""} className={input}>
-            <option value="">Oba</option>
-            {RYNKI.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </AutoSubmitSelect>
-        </Field>
-        <Field label={isLand ? "Pole działki, m²" : "Powierzchnia, m²"}>
-          <span className="flex gap-2">
-            <input name="powOd" defaultValue={q.powOd} inputMode="decimal" placeholder="od" className={input} />
-            <input name="powDo" defaultValue={q.powDo} inputMode="decimal" placeholder="do" className={input} />
-          </span>
-        </Field>
-        <Field label="Cena za m², zł">
-          <span className="flex gap-2">
-            <input name="m2Od" defaultValue={q.m2Od} inputMode="numeric" placeholder="od" className={input} />
-            <input name="m2Do" defaultValue={q.m2Do} inputMode="numeric" placeholder="do" className={input} />
-          </span>
-        </Field>
-        <Field label="Okres (miesiąc)">
-          <span className="flex gap-2">
-            <input name="od" type="month" defaultValue={q.od?.slice(0, 7)} className={input} />
-            <input name="do" type="month" defaultValue={q.do?.slice(0, 7)} className={input} />
-          </span>
-        </Field>
-        {q.rodzaj === "mieszkanie" && (
-          <Field label="Pokoje">
-            <AutoSubmitSelect name="pokoje" defaultValue={q.pokoje ?? ""} className={input}>
-              <option value="">Dowolnie</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4 i więcej</option>
+        {/* na telefonie dodatkowe filtry chowają się pod przełącznikiem (bez JavaScriptu), na komputerze są zawsze widoczne */}
+        <input type="checkbox" id="wiecej-filtrow" className="peer sr-only" defaultChecked={extra} />
+        <label htmlFor="wiecej-filtrow" className="cursor-pointer text-sm font-semibold text-plum-900 peer-checked:hidden lg:hidden">
+          + Więcej filtrów: rynek, metraż, cena, okres{extra ? " (ustawione)" : ""}
+        </label>
+        <div className="hidden peer-checked:contents lg:contents">
+          <Field label="Rynek">
+            <AutoSubmitSelect name="rynek" defaultValue={q.rynek ?? ""} className={input}>
+              <option value="">Oba</option>
+              {RYNKI.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </AutoSubmitSelect>
           </Field>
-        )}
-        <Field label="Cena całkowita, zł">
-          <span className="flex gap-2">
-            <input name="cenaOd" defaultValue={q.cenaOd} inputMode="numeric" placeholder="od" className={input} />
-            <input name="cenaDo" defaultValue={q.cenaDo} inputMode="numeric" placeholder="do" className={input} />
-          </span>
-        </Field>
-        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-1 lg:col-start-4">
+          <Field label={isLand ? "Pole działki, m²" : "Powierzchnia, m²"}>
+            <span className="grid grid-cols-2 gap-2">
+              <input name="powOd" defaultValue={q.powOd} inputMode="decimal" placeholder="od" className={input} />
+              <input name="powDo" defaultValue={q.powDo} inputMode="decimal" placeholder="do" className={input} />
+            </span>
+          </Field>
+          <Field label="Cena za m², zł">
+            <span className="grid grid-cols-2 gap-2">
+              <input name="m2Od" defaultValue={q.m2Od} inputMode="numeric" placeholder="od" className={input} />
+              <input name="m2Do" defaultValue={q.m2Do} inputMode="numeric" placeholder="do" className={input} />
+            </span>
+          </Field>
+          <Field label="Cena całkowita, zł">
+            <span className="grid grid-cols-2 gap-2">
+              <input name="cenaOd" defaultValue={q.cenaOd} inputMode="numeric" placeholder="od" className={input} />
+              <input name="cenaDo" defaultValue={q.cenaDo} inputMode="numeric" placeholder="do" className={input} />
+            </span>
+          </Field>
+          <Field label="Okres (od miesiąca do miesiąca)" className="sm:col-span-2">
+            <span className="grid grid-cols-2 gap-2">
+              <input name="od" type="month" defaultValue={q.od?.slice(0, 7)} className={input} />
+              <input name="do" type="month" defaultValue={q.do?.slice(0, 7)} className={input} />
+            </span>
+          </Field>
+          {q.rodzaj === "mieszkanie" && (
+            <Field label="Pokoje">
+              <AutoSubmitSelect name="pokoje" defaultValue={q.pokoje ?? ""} className={input}>
+                <option value="">Dowolnie</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4 i więcej</option>
+              </AutoSubmitSelect>
+            </Field>
+          )}
+        </div>
+        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-3">
           <button className="inline-flex flex-1 items-center justify-center rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">Pokaż</button>
           <Link href="/crm/ceny" className="rounded-full px-3 py-2.5 text-sm font-semibold text-graphite/60 hover:text-plum-900">Wyczyść</Link>
         </div>
@@ -134,7 +143,11 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
         <section className={`${card} mb-6`}>
           <h2 className="font-semibold">Mediana ceny za m² kwartał po kwartale</h2>
           <p className="mb-4 text-sm text-graphite/55">Pasek to przedział od 25. do 75. percentyla, kropka to mediana. Blade kwartały mają mniej niż 10 transakcji.</p>
-          <Trend data={tr} />
+          <div className="-mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">
+            <div className="min-w-[36rem]">
+              <Trend data={tr} />
+            </div>
+          </div>
         </section>
       )}
 
@@ -163,7 +176,10 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
               </thead>
               <tbody>
                 {(() => {
+                  // skala paska od nieco poniżej najniższego do najwyższego kwartyla, żeby różnice były widoczne
                   const max = Math.max(...cmp.map((c) => c.p75 ?? 0), 1);
+                  const min = Math.min(...cmp.map((c) => c.p25 ?? max)) * 0.85;
+                  const at = (v: number) => ((v - min) / (max - min || 1)) * 100;
                   return cmp.map((c) => {
                     const next = groupBy(c.nazwa);
                     return (
@@ -177,9 +193,9 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
                             <span className="w-24 shrink-0 tabular-nums font-semibold">{m2(c.med).replace(" zł/m²", "")}</span>
                             <span className="relative h-2 flex-1 rounded-full bg-mist">
                               {c.p25 && c.p75 && (
-                                <span className={`absolute inset-y-0 rounded-full ${c.nM2 < 10 ? "bg-gold-200" : "bg-gold-400"}`} style={{ left: `${(c.p25 / max) * 100}%`, width: `${Math.max(((c.p75 - c.p25) / max) * 100, 0.8)}%` }} />
+                                <span className={`absolute inset-y-0 rounded-full ${c.nM2 < 10 ? "bg-gold-200" : "bg-gold-400"}`} style={{ left: `${at(c.p25)}%`, width: `${Math.max(at(c.p75) - at(c.p25), 0.8)}%` }} />
                               )}
-                              {c.med && <span className="absolute -top-0.5 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-plum-900" style={{ left: `${(c.med / max) * 100}%` }} />}
+                              {c.med && <span className="absolute -top-0.5 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-plum-900" style={{ left: `${at(c.med)}%` }} />}
                             </span>
                           </span>
                         </td>
@@ -195,7 +211,7 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
         ) : (
           <Empty>Brak transakcji dla tych filtrów.</Empty>
         )}
-        <p className="mt-2 text-xs text-graphite/45">Kliknij nazwę, żeby zejść poziom niżej: powiat → miejscowość → ulica → lata.</p>
+        <p className="mt-2 text-xs text-graphite/45">Kliknij nazwę, żeby zejść poziom niżej: powiat → gmina (w Łodzi dzielnica) → ulica → lata.</p>
       </section>
 
       {pts.length > 0 && (
@@ -215,7 +231,7 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
               <li key={r.id} className="grid gap-x-4 gap-y-1 rounded-2xl border border-graphite/10 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">
-                    {[r.ulica && `${r.ulica} ${r.numer ?? ""}`.trim(), r.miejscowosc].filter(Boolean).join(", ") || r.powiat}
+                    {[r.ulica && `${r.ulica} ${r.numer ?? ""}`.trim(), r.miejscowosc ?? r.gmina].filter(Boolean).join(", ") || r.powiat}
                   </p>
                   <p className="text-sm text-graphite/55">
                     {[
