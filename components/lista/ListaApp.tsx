@@ -6,6 +6,8 @@ import Settings from "./Settings";
 
 const CACHE = "lista-cache";
 const POLL_MS = 15_000;
+// po dyktowaniu z mikrofonu klawiatury wpis dodaje się sam po tylu ms ciszy
+const DICTATION_IDLE_MS = 2000;
 
 // Wspólna lista: dodawanie, odhaczanie, poprawianie i usuwanie wpisów. Zmiany od razu na ekranie, w tle zapis na serwerze.
 // Gdy aplikacja jest na wierzchu, co 15 s i po każdym powiadomieniu pobiera świeżą listę i zeruje licznik na ikonie.
@@ -19,6 +21,12 @@ export default function ListaApp({ initial }: { initial: ListState }) {
   const [showDone, setShowDone] = useState(false);
   const [settings, setSettings] = useState(false);
   const busy = useRef(0);
+  const field = useRef<HTMLTextAreaElement>(null);
+  const textRef = useRef("");
+  textRef.current = text;
+  // dyktowanie: kilka znaków naraz w jednym zdarzeniu (pisanie palcem to po jednym znaku)
+  const [dictating, setDictating] = useState(0);
+  const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const refresh = useCallback(async (markSeen: boolean) => {
     // nie nadpisujemy ekranu w trakcie własnych zapisów
@@ -96,14 +104,38 @@ export default function ListaApp({ initial }: { initial: ListState }) {
     }
   }
 
-  async function add(e: React.SyntheticEvent) {
-    e.preventDefault();
-    const t = text.trim();
+  function stopDictation() {
+    clearTimeout(idle.current);
+    setDictating(0);
+  }
+
+  function onComposerInput(e: React.FormEvent<HTMLTextAreaElement>) {
+    grow(e);
+    const ev = e.nativeEvent as InputEvent;
+    const added = (ev.data ?? "").length;
+    // pisanie palcem, kasowanie albo wklejenie wyłącza automatyczne dodawanie
+    if (ev.inputType === "insertFromPaste" || ev.inputType?.startsWith("delete") || (ev.inputType === "insertText" && added <= 1 && !dictating)) {
+      return stopDictation();
+    }
+    if (added > 1 || ev.inputType === "insertReplacementText" || dictating) {
+      clearTimeout(idle.current);
+      setDictating((n) => n + 1);
+      idle.current = setTimeout(() => {
+        setDictating(0);
+        add();
+      }, DICTATION_IDLE_MS);
+    }
+  }
+
+  async function add(e?: React.SyntheticEvent) {
+    e?.preventDefault();
+    stopDictation();
+    const t = textRef.current.trim();
     if (!t) return;
     const temp: Item = { id: -Date.now(), text: t, author: state.me, createdAt: new Date().toISOString(), doneAt: null, doneBy: null };
     setState((s) => ({ ...s, open: [temp, ...s.open] }));
     setText("");
-    (e.currentTarget as HTMLElement).closest("form")?.querySelector("textarea")?.style.removeProperty("height");
+    field.current?.style.removeProperty("height");
     const r = await call("/api/lista/items", "POST", { text: t });
     if (!r) {
       setState((s) => ({ ...s, open: s.open.filter((i) => i.id !== temp.id) }));
@@ -141,8 +173,12 @@ export default function ListaApp({ initial }: { initial: ListState }) {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col">
-      <header className="sticky top-0 z-20 bg-plum-900 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] text-pearl">
-        <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-20 isolate overflow-hidden bg-plum-900 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] text-pearl">
+        {/* złota panorama Łodzi nocą w tle nagłówka, jak w hero strony */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hero/panorama.webp" alt="" aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-full w-full object-cover object-[78%_100%] opacity-45" />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-plum-900/70 via-plum-900/20 to-plum-900/60" />
+        <div className="flex items-center justify-between pb-10">
           <h1 className="font-display text-3xl font-semibold text-gold-500">
             lista<span className="text-pearl">.</span>
           </h1>
@@ -152,9 +188,11 @@ export default function ListaApp({ initial }: { initial: ListState }) {
         </div>
         <form onSubmit={add} className="mt-3 flex items-end gap-2">
           <textarea
+            ref={field}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            onInput={grow}
+            onInput={onComposerInput}
+            onBlur={stopDictation}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) add(e);
             }}
@@ -168,6 +206,15 @@ export default function ListaApp({ initial }: { initial: ListState }) {
             +
           </button>
         </form>
+        {dictating > 0 && (
+          // pasek odliczania: wpis doda się sam, gdy dyktowanie ucichnie na 2 s
+          <div className="mt-2 flex items-center gap-2 text-xs text-pearl/70">
+            <span className="h-1 flex-1 overflow-hidden rounded-full bg-pearl/15">
+              <span key={dictating} className="dictation-bar block h-full rounded-full bg-gold-500" style={{ animationDuration: `${DICTATION_IDLE_MS}ms` }} />
+            </span>
+            Dodam samo
+          </div>
+        )}
       </header>
 
       {(error || offline) && (

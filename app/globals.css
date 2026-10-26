@@ -254,3 +254,13 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 @keyframes fade { from { opacity: 0; } }
 /* hero oferty: zdjęcie powoli się oddala po wejściu na stronę */
 @keyframes offer-zoom { from { transform: scale(1.12); } }
+
+/* Lista: odliczanie do automatycznego dodania podyktowanego wpisu */
+.dictation-bar {
+  animation: dictation-bar linear both;
+  transform-origin: left;
+}
+@keyframes dictation-bar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

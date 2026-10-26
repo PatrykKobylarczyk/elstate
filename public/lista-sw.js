@@ -1,13 +1,13 @@
 // Service worker Listy (zakres /lista).
 // Strony zawsze najpierw z sieci; bez sieci ostatnia zapamiętana wersja listy (dane i tak doczyta aplikacja z pamięci telefonu).
 // Powiadomienie o nowym wpisie ustawia licznik na ikonie (navigator.setAppBadge, na iPhonie od iOS 16.4 w aplikacji z ekranu początkowego).
-const VERSION = "lista-v1";
+const VERSION = "lista-v2";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const OFFLINE = "/lista-offline.html";
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(STATIC).then((c) => c.addAll([OFFLINE, "/lista-icons/icon-192.png"])).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(STATIC).then((c) => c.addAll([OFFLINE, "/lista-icons/icon-192.png", "/hero/panorama.webp"])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (e) => {
@@ -39,7 +39,7 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/lista-icons/")) {
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/lista-icons/") || url.pathname === "/hero/panorama.webp") {
     e.respondWith(
       caches.match(req).then(
         (hit) =>
