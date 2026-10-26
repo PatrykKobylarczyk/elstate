@@ -1,7 +1,7 @@
 // Service worker Listy (zakres /lista).
 // Strony zawsze najpierw z sieci; bez sieci ostatnia zapamiętana wersja listy (dane i tak doczyta aplikacja z pamięci telefonu).
 // Powiadomienie o nowym wpisie ustawia licznik na ikonie (navigator.setAppBadge, na iPhonie od iOS 16.4 w aplikacji z ekranu początkowego).
-const VERSION = "lista-v2";
+const VERSION = "lista-v3";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const OFFLINE = "/lista-offline.html";
@@ -63,22 +63,30 @@ self.addEventListener("push", (e) => {
   } catch {
     data = { body: e.data ? e.data.text() : "" };
   }
-  const badge = Number.isInteger(data.badge) ? data.badge : null;
+  const fromServer = Number.isInteger(data.badge) ? data.badge : 0;
   e.waitUntil(
-    Promise.all([
-      self.registration.showNotification(data.title || "Lista", {
+    self.registration
+      .showNotification(data.title || "Lista", {
         body: data.body || "",
         tag: data.tag || undefined,
         icon: "/lista-icons/icon-192.png",
         badge: "/lista-icons/badge-96.png",
         data: { url: data.url || "/lista" },
-      }),
-      badge === null || !self.navigator.setAppBadge ? null : (badge > 0 ? self.navigator.setAppBadge(badge) : self.navigator.clearAppBadge()).catch(() => {}),
+      })
+      // licznik na ikonie: liczba nowych wpisów z serwera, a co najmniej tyle, ile powiadomień czeka w centrum powiadomień
+      .then(() => self.registration.getNotifications())
+      .then((shown) => setBadge(Math.max(fromServer, shown.length)))
+      .then(() => self.clients.matchAll({ type: "window" }))
       // otwarta lista od razu pokazuje nowy wpis
-      self.clients.matchAll({ type: "window" }).then((wins) => wins.forEach((w) => w.postMessage("lista-refresh"))),
-    ]),
+      .then((wins) => wins.forEach((w) => w.postMessage("lista-refresh"))),
   );
 });
+
+function setBadge(n) {
+  const nav = self.navigator;
+  if (!nav.setAppBadge) return;
+  return (n > 0 ? nav.setAppBadge(n) : nav.clearAppBadge()).catch(() => {});
+}
 
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();

@@ -130,6 +130,11 @@ export default function Settings({ me, onClose }: { me: string; onClose: () => v
             {push === "unsupported" && <p className="text-graphite/60">Ta przeglądarka nie obsługuje powiadomień.</p>}
           </div>
           {note && <p className="mt-2 text-graphite/70">{note}</p>}
+          {push === "on" && (
+            <p className="mt-2 text-xs text-graphite/50">
+              Brak licznika na ikonie? Na iPhonie: Ustawienia → Powiadomienia → Lista → włącz <b>Plakietki</b>.
+            </p>
+          )}
         </div>
 
         <form action={logout} className="mt-6 flex items-center justify-between border-t border-graphite/10 pt-5">
