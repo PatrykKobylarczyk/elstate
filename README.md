@@ -21,3 +21,11 @@ npm run build && npm start
 - `components/Wordmark.tsx`: napis „elstate.” złożony krojem Manrope. `public/team/`: zdjęcia zespołu.
 
 Stare adresy `/uslugi`, `/finanse`, `/o-nas` przekierowują do sekcji strony głównej.
+
+## Lista (wspólna lista zadań na telefon)
+
+`/lista` to osobna mała aplikacja (PWA) z listą rzeczy do zrobienia, wspólną dla kilku telefonów. Korzysta z tej samej bazy co CRM (tabele `lista_*`), ale nie z kont CRM.
+
+- Wymaga zmiennej **`LISTA_HASLO`** (wspólne hasło). Każdy telefon loguje się raz: hasło + imię, ciasteczko ważne ok. rok.
+- Nowy wpis wysyła powiadomienie push do pozostałych osób i ustawia licznik nowych wpisów na ikonie aplikacji (iPhone: iOS 16.4+, aplikacja dodana do ekranu początkowego, powiadomienia włączone w ⚙︎).
+- Kod: `app/lista/`, `app/api/lista/`, `lib/lista/`, `components/lista/`, `public/lista-sw.js`, `public/lista.webmanifest`.

@@ -175,7 +175,45 @@ export const pushSubscriptions = pgTable(
   (t) => [uniqueIndex("push_endpoint_idx").on(t.endpoint)],
 );
 
+// Lista: wspólna lista zadań na dwa telefony (osobna aplikacja pod /lista, bez kont CRM).
+// Urządzenie loguje się raz wspólnym hasłem LISTA_HASLO i podaje imię; w bazie tylko skrót sha256 tokenu z ciasteczka.
+export const listaDevices = pgTable("lista_devices", {
+  id: serial("id").primaryKey(),
+  tokenHash: text("token_hash").notNull().unique(),
+  name: text("name").notNull(),
+  // ostatnie otwarcie listy na tym urządzeniu; nowsze wpisy innych osób to licznik na ikonie
+  seenAt: timestamp("seen_at", { withTimezone: true }).notNull().defaultNow(),
+  lastActiveAt: timestamp("last_active_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: createdAt(),
+});
+
+export const listaItems = pgTable(
+  "lista_items",
+  {
+    id: serial("id").primaryKey(),
+    text: text("text").notNull(),
+    author: text("author").notNull(),
+    authorDeviceId: integer("author_device_id").references(() => listaDevices.id, { onDelete: "set null" }),
+    doneAt: timestamp("done_at", { withTimezone: true }),
+    doneBy: text("done_by"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("lista_items_done_idx").on(t.doneAt, t.createdAt)],
+);
+
+export const listaPush = pgTable("lista_push", {
+  id: serial("id").primaryKey(),
+  deviceId: integer("device_id").notNull().references(() => listaDevices.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: createdAt(),
+});
+
 export type User = typeof users.$inferSelect;
 export type ListingRow = typeof listings.$inferSelect;
 export type LeadRow = typeof leads.$inferSelect;
 export type ClientRow = typeof clients.$inferSelect;
+export type ListaItem = typeof listaItems.$inferSelect;
+export type ListaDevice = typeof listaDevices.$inferSelect;
