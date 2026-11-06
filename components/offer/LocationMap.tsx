@@ -192,7 +192,7 @@ function MapInner({
     <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
       <div className="flex flex-col gap-10 p-8 md:p-14">
         {children}
-        {details && crmProbe && <p className="-mt-4 text-xs uppercase tracking-[0.18em] text-gold-300">Widoczne tylko dla zalogowanych w CRM</p>}
+        {details && crmProbe && !detailsProp && <p className="-mt-4 text-xs uppercase tracking-[0.18em] text-gold-300">Widoczne tylko dla zalogowanych w CRM</p>}
         {details && (
         <div className="border-t border-pearl/15">
             {CATEGORY_TABS.map((t) => ({ ...t, items: categories.find((c) => c.key === t.key)?.items ?? [] })).map((c) => (

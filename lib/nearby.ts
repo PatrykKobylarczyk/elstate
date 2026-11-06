@@ -14,7 +14,7 @@ export async function nearby(spot: { lat: number; lng: number }): Promise<Nearby
       const r = await fetch(`${url}?data=${q}`, {
         headers: { "User-Agent": "elstate.pl (info@elstate.pl)" },
         next: { revalidate: 60 * 60 * 24 * 30 },
-        signal: AbortSignal.timeout(9000),
+        signal: AbortSignal.timeout(5000),
       });
       if (!r.ok) {
         console.warn("[okolica]", url, r.status);

@@ -18,7 +18,7 @@ export async function geocode(parts: { street?: string; district?: string; city?
       const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=pl&q=${encodeURIComponent(q)}`, {
         headers: { "User-Agent": "elstate.pl (info@elstate.pl)", "Accept-Language": "pl" },
         next: { revalidate: 60 * 60 * 24 * 30 },
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(2500),
       });
       if (!r.ok) continue;
       const [hit] = (await r.json()) as { lat: string; lon: string }[];
