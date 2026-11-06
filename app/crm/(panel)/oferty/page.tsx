@@ -63,8 +63,8 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<{
       {rows.length ? (
         <ul className="grid gap-3">
           {rows.map(({ l, agent }) => (
-            <li key={l.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-graphite/10 bg-white p-3 pr-4">
-              <Link href={`/crm/oferty/${l.id}`} className="flex min-w-0 flex-1 basis-80 items-center gap-4">
+            <li key={l.id} className="flex min-w-0 flex-wrap items-center gap-4 rounded-2xl border border-graphite/10 bg-white p-3 pr-4">
+              <Link href={`/crm/oferty/${l.id}`} className="flex min-w-0 flex-1 basis-64 items-center gap-4">
                 <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-mist">
                   {l.images[0] && (
                     // eslint-disable-next-line @next/next/no-img-element

@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { currentSession, has2fa } from "@/lib/crm/auth";
 import { nearby } from "@/lib/nearby";
 
+export const maxDuration = 30;
+
 // Okolica oferty (szkoły, sklepy, zieleń… z odległościami) dla strony oferty oglądanej z CRM.
 // Tylko dla zalogowanych po 2FA; dla pozostałych 401, więc na stronie widać samą mapę z adresem.
 export async function GET(req: NextRequest) {

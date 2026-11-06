@@ -9,8 +9,6 @@ import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { categoriesCrm, clientKinds, deals, label, listingStatuses } from "@/lib/crm/labels";
 import { clients, listings, users } from "@/lib/crm/schema";
-import { geocode } from "@/lib/geocode";
-import { nearby } from "@/lib/nearby";
 
 export const metadata: Metadata = { title: "Oferta" };
 
@@ -26,8 +24,8 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
   const { l } = row;
   const [owner] = l.ownerId ? await d.select().from(clients).where(eq(clients.id, l.ownerId)) : [];
 
-  const spot = l.lat != null && l.lng != null ? { lat: l.lat, lng: l.lng } : await geocode({ street: l.street ?? undefined, district: l.district, city: l.city });
-  const around = spot ? await nearby(spot) : [];
+  // mapa i okolica wczytują się w przeglądarce, żeby karta otwierała się od razu, nawet gdy serwery map są wolne
+  const spot = l.lat != null && l.lng != null ? { lat: l.lat, lng: l.lng } : null;
   const queries = [[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]]
     .map((q) => q.filter(Boolean).join(", "))
     .filter((q, i, all) => q && all.indexOf(q) === i);
@@ -138,7 +136,7 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
       </div>
 
       <section className="mt-6">
-        <LocationMap home={spot} queries={queries} pinLabel={l.street || l.district || l.city} categories={around} details zoom={l.street ? 16 : 14}>
+        <LocationMap home={spot} queries={queries} pinLabel={l.street || l.district || l.city} details crmProbe zoom={l.street ? 16 : 14}>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Okolica</p>
             <h2 className="mt-3 font-display text-3xl">{place || l.city}</h2>
