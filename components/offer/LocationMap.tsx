@@ -18,7 +18,7 @@ export function distTxt(m: number) {
 const GOLD = "#c19a5b";
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-export default function LocationMap({
+function MapInner({
   home,
   pinLabel,
   categories: initial,
@@ -39,6 +39,7 @@ export default function LocationMap({
   const [open, setOpen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [categories, setCategories] = useState(initial);
+  const [loading, setLoading] = useState(initial.length === 0);
 
   // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS)
   useEffect(() => {
@@ -52,12 +53,16 @@ export default function LocationMap({
           const r = await fetch(`${url}?data=${q}`, { signal: AbortSignal.timeout(15000) });
           if (!r.ok) continue;
           const cats = parseNearby(h, ((await r.json()) as { elements: El[] }).elements);
-          if (alive) setCategories(cats);
+          if (alive) {
+            setCategories(cats);
+            setLoading(false);
+          }
           return;
         } catch {
           // spróbuj drugiego serwera
         }
       }
+      if (alive) setLoading(false);
     })();
     return () => {
       alive = false;
@@ -151,6 +156,8 @@ export default function LocationMap({
     <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
       <div className="flex flex-col gap-10 p-8 md:p-14">
         {children}
+        {loading && <p className="text-sm text-pearl/55">Wczytuję miejsca w okolicy…</p>}
+        {!loading && categories.length === 0 && <p className="text-sm text-pearl/55">Nie udało się teraz wczytać miejsc w okolicy. Odśwież stronę za chwilę.</p>}
         {categories.length > 0 && (
           <div className="border-t border-pearl/15">
             {categories.map((c) => (
@@ -193,6 +200,54 @@ export default function LocationMap({
       <div className="relative min-h-[22rem] lg:min-h-[38rem]">
         <div ref={el} className="offer-map absolute inset-0" role="region" aria-label={`Mapa: ${pinLabel}`} />
       </div>
+    </div>
+  );
+}
+
+// Gdy serwer nie znalazł współrzędnych adresu (np. Nominatim odrzuca zapytania z Vercel),
+// szukamy ich w przeglądarce, od najdokładniejszego zapytania do samego miasta.
+export default function LocationMap({
+  home,
+  queries,
+  ...rest
+}: Omit<Parameters<typeof MapInner>[0], "home"> & { home: { lat: number; lng: number } | null; queries: string[] }) {
+  const [pos, setPos] = useState(home);
+  const [failed, setFailed] = useState(false);
+  const key = queries.join("|");
+  useEffect(() => {
+    if (pos) return;
+    let alive = true;
+    (async () => {
+      for (const q of key.split("|")) {
+        try {
+          const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=pl&accept-language=pl&q=${encodeURIComponent(q)}`, {
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!r.ok) continue;
+          const [hit] = (await r.json()) as { lat: string; lon: string }[];
+          if (hit && alive) {
+            setPos({ lat: Number(hit.lat), lng: Number(hit.lon) });
+            return;
+          }
+        } catch {
+          // spróbuj ogólniejszego zapytania
+        }
+      }
+      if (alive) setFailed(true);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [pos, key]);
+
+  if (pos) return <MapInner home={pos} {...rest} />;
+  return (
+    <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="flex flex-col gap-10 p-8 md:p-14">
+        {rest.children}
+        <p className="text-sm text-pearl/55">{failed ? "Nie udało się teraz wczytać mapy okolicy. Odśwież stronę za chwilę." : "Wczytuję mapę okolicy…"}</p>
+      </div>
+      <div className="relative min-h-[22rem] bg-mist lg:min-h-[38rem]" />
     </div>
   );
 }
