@@ -31,15 +31,17 @@ function Slider({
   );
 }
 
+// Stałe oprocentowanie przyjęte do wyliczeń (w procentach rocznie).
+const RATE = 5.5;
+
 // Rata równa (annuitetowa). Wynik jest orientacyjny; ofertę przygotowuje doradca kredytowy.
 export default function MortgageCalculator({ initialPrice = 750000 }: { initialPrice?: number }) {
   const [price, setPrice] = useState(initialPrice);
   const [down, setDown] = useState(20);
   const [years, setYears] = useState(25);
-  const [rate, setRate] = useState(7.2);
 
   const loan = price * (1 - down / 100);
-  const r = rate / 100 / 12;
+  const r = RATE / 100 / 12;
   const n = years * 12;
   const monthly = r === 0 ? loan / n : (loan * r) / (1 - Math.pow(1 + r, -n));
 
@@ -49,7 +51,10 @@ export default function MortgageCalculator({ initialPrice = 750000 }: { initialP
         <Slider label="Cena nieruchomości" value={price} min={200000} max={3000000} step={10000} format={(v) => `${pln.format(v)} zł`} onChange={setPrice} />
         <Slider label="Wkład własny" value={down} min={10} max={60} step={1} format={(v) => `${v}%`} onChange={setDown} />
         <Slider label="Okres kredytowania" value={years} min={5} max={35} step={1} format={(v) => `${v} lat`} onChange={setYears} />
-        <Slider label="Oprocentowanie" value={rate} min={3} max={11} step={0.1} format={(v) => `${v.toFixed(1).replace(".", ",")}%`} onChange={setRate} />
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="text-sm text-graphite/60">Oprocentowanie</span>
+          <span className="font-display text-xl tabular-nums text-graphite">{RATE.toFixed(1).replace(".", ",")}%</span>
+        </div>
       </div>
       <div className="flex flex-col justify-between gap-8 border-t border-graphite/10 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0">
         <div>
@@ -64,7 +69,7 @@ export default function MortgageCalculator({ initialPrice = 750000 }: { initialP
           <div><dt className="text-graphite/55">Wkład własny</dt><dd className="mt-1">{pln.format(price - loan)} zł</dd></div>
         </dl>
         <p className="text-xs leading-relaxed text-graphite/45">
-          Wyliczenie orientacyjne, nie jest ofertą banku. Oprocentowanie możesz zmienić suwakiem.
+          Wyliczenie orientacyjne, nie jest ofertą banku. Przyjęto oprocentowanie 5,5% w skali roku.
         </p>
       </div>
     </div>
