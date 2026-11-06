@@ -264,3 +264,20 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
+
+/* Mapa okolicy oferty (Leaflet, components/offer/LocationMap.tsx), styl jak w N75 */
+.offer-map.leaflet-container { font: inherit; background: var(--color-mist); }
+.offer-map .leaflet-tile-pane { filter: grayscale(0.55) sepia(0.3) contrast(0.95) brightness(1.02); }
+.offer-map .leaflet-control-attribution { font-size: 10px; background: rgba(249, 245, 239, 0.85); }
+.offer-map .leaflet-bar { border: 1px solid rgba(42, 42, 45, 0.2); border-radius: 0.5rem; overflow: hidden; }
+.offer-map .leaflet-bar a { color: var(--color-plum-900); background: rgba(249, 245, 239, 0.95); }
+.offer-map__home { background: var(--color-pearl); color: var(--color-plum-900); border: 1px solid rgba(42, 42, 45, 0.2); border-radius: 999px; padding: 6px 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+.offer-map__home:hover { border-color: var(--color-gold-500); }
+.offer-pin { pointer-events: none; }
+.offer-pin span { position: absolute; left: 0; bottom: 26px; transform: translateX(-50%); white-space: nowrap; background: var(--color-plum-900); color: var(--color-gold-300); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; box-shadow: 0 4px 16px rgba(42, 42, 45, 0.3); }
+.offer-pin i { position: absolute; left: -0.5px; bottom: 0; width: 1px; height: 26px; background: var(--color-plum-900); }
+.offer-pin i::after { content: ""; position: absolute; left: -4px; bottom: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--color-gold-500); border: 2px solid var(--color-plum-900); }
+.poi-pin i { display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--color-gold-500); border: 3px solid var(--color-pearl); box-shadow: 0 2px 8px rgba(42, 42, 45, 0.35); animation: poi-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes poi-in { from { transform: scale(0); } }
+.leaflet-tooltip.poi-tip { font-family: inherit; font-size: 12px; line-height: 1.35; color: var(--color-graphite); background: var(--color-pearl); border: 1px solid rgba(42, 42, 45, 0.15); border-radius: 0.5rem; box-shadow: 0 4px 16px rgba(42, 42, 45, 0.15); padding: 6px 9px; }
+.leaflet-tooltip.poi-tip b { font-weight: 600; }
