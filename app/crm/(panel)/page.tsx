@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, notInArray, sql } from "drizzle-orm";
 import { Badge, card, Empty, PageHead, ago, leadTone, pln, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { HIDDEN, INBOX, REVIEW, label, leadSources, leadStatuses } from "@/lib/crm/labels";
-import { leads, listings } from "@/lib/crm/schema";
+import { clients, leads, listings, searchMatches } from "@/lib/crm/schema";
 
 export const metadata: Metadata = { title: "Pulpit" };
 
@@ -32,6 +32,15 @@ export default async function Pulpit() {
   ]);
   const [inboxTotal] = await d.select({ n: sql<number>`count(*)::int` }).from(leads).where(inArray(leads.status, INBOX));
   const [review] = await d.select({ n: sql<number>`count(*)::int` }).from(leads).where(eq(leads.status, REVIEW));
+  // nowe ogłoszenia z nbota pasujące do poszukiwań klientów, jeszcze nieprzejrzane
+  const matched = await d
+    .select({ id: clients.id, name: clients.name, n: sql<number>`count(distinct ${searchMatches.leadId})::int` })
+    .from(searchMatches)
+    .innerJoin(clients, eq(clients.id, searchMatches.clientId))
+    .where(isNull(searchMatches.seenAt))
+    .groupBy(clients.id, clients.name)
+    .orderBy(desc(sql`max(${searchMatches.createdAt})`))
+    .limit(6);
   const hour = Number(new Intl.DateTimeFormat("pl-PL", { hour: "numeric", timeZone: "Europe/Warsaw" }).format(new Date()));
   const hello = hour < 12 ? "Dzień dobry" : hour < 18 ? "Cześć" : "Dobry wieczór";
 
@@ -61,6 +70,21 @@ export default async function Pulpit() {
           <span>Z nbota czeka {review.n} {review.n === 1 ? "ogłoszenie" : review.n % 10 >= 2 && review.n % 10 <= 4 && (review.n % 100 < 12 || review.n % 100 > 14) ? "ogłoszenia" : "ogłoszeń"} do przejrzenia</span>
           <span className="text-plum-900">Przejrzyj →</span>
         </Link>
+      )}
+
+      {matched.length > 0 && (
+        <section className="mt-3 rounded-2xl border border-plum-700/25 bg-white px-5 py-4">
+          <p className="text-sm font-semibold text-plum-900">Nowe ogłoszenia pasujące do klientów</p>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {matched.map((m) => (
+              <li key={m.id}>
+                <Link href={`/crm/klienci/${m.id}#poszukiwania`} className="inline-flex items-center gap-2 rounded-full bg-pearl px-3.5 py-1.5 text-sm font-semibold hover:bg-mist">
+                  {m.name} <Badge tone="plum">{m.n}</Badge>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">

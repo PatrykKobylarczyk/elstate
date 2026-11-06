@@ -29,3 +29,12 @@ Stare adresy `/uslugi`, `/finanse`, `/o-nas` przekierowują do sekcji strony gł
 - Wymaga zmiennej **`LISTA_HASLO`** (wspólne hasło). Każdy telefon loguje się raz: hasło + imię, ciasteczko ważne ok. rok.
 - Nowy wpis wysyła powiadomienie push do pozostałych osób i ustawia licznik nowych wpisów na ikonie aplikacji (iPhone: iOS 16.4+, aplikacja dodana do ekranu początkowego, powiadomienia włączone w ⚙︎).
 - Kod: `app/lista/`, `app/api/lista/`, `lib/lista/`, `components/lista/`, `public/lista-sw.js`, `public/lista.webmanifest`.
+
+## CRM: oferty pasujące do klientów
+
+Na karcie klienta w sekcji „Czego szuka” zapisuje się kryteria: transakcja, rodzaj, lokalizacje, cena, metraż, pokoje i słowa do pominięcia. Każde ogłoszenie z nbota (automat z Gmaila i ręczne wklejenie) jest porównywane z aktywnymi kryteriami. Pasujące:
+
+- wysyłają push do opiekuna z kryteriów (albo do całego zespołu) i, gdy zaznaczono, e-mail (wymaga `RESEND_API_KEY` albo `SMTP_URL`);
+- pojawiają się na pulpicie („Nowe ogłoszenia pasujące do klientów”), na karcie klienta i na karcie zgłoszenia.
+
+Źródłem jest wyłącznie nbot (zbiera Otodom, OLX i inne portale), CRM nie wchodzi na portale. Rodzaj i transakcję odczytujemy z linku i tytułu, bo nbot nie podaje ich osobno; brakująca wartość nie wyklucza ogłoszenia, ale lokalizacja musi się zgadzać. Kod: `lib/crm/match.ts` (reguły), `lib/crm/matches.ts` (zapis i powiadomienia), `app/crm/(panel)/klienci/search-actions.ts`.

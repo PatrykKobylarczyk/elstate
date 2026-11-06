@@ -236,7 +236,7 @@ export async function importNbot(_: State, f: FormData): Promise<State> {
   const html = /<\/?(a|p|div|table|br)\b/i.test(body) ? body : undefined;
   const r = await ingestNbot({ subject: opt(f, "subject") ?? undefined, text: html ? undefined : body, html }, user.id);
   revalidatePath("/crm", "layout");
-  return { ok: `Dodano do „Do kontaktu”: ${r.added}${r.repeated ? `, już znane ogłoszenia: ${r.repeated}` : ""}.` };
+  return { ok: `Dodano do „Do kontaktu”: ${r.added}${r.repeated ? `, już znane ogłoszenia: ${r.repeated}` : ""}.${r.matched ? ` Pasuje do poszukiwań klientów: ${r.matched}.` : ""}` };
 }
 
 export async function leadToClient(f: FormData) {
