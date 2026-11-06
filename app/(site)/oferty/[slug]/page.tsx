@@ -238,12 +238,13 @@ export default async function Oferta({ params }: Props) {
         </div>
       </section>
 
-      {/* LOKALIZACJA: adres oferty na mapie (okolica z odległościami jest w CRM) */}
+      {/* LOKALIZACJA: adres oferty na mapie; okolicę z odległościami widzą tylko zalogowani w CRM */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
         <LocationMap
           home={spot}
           queries={[[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
           pinLabel={l.street || l.district || l.city}
+          crmProbe
           zoom={l.street ? 16 : 14}
         >
           {locationHead}

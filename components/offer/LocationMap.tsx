@@ -22,7 +22,8 @@ function MapInner({
   home,
   pinLabel,
   categories: initial = [],
-  details = false,
+  details: detailsProp = false,
+  crmProbe = false,
   zoom = 16,
   children,
 }: {
@@ -30,6 +31,8 @@ function MapInner({
   pinLabel: string;
   // details: zakładki z okolicą (edukacja, zdrowie, zieleń…) i odległości; na stronie publicznej sama pinezka
   details?: boolean;
+  // crmProbe: strona publiczna pyta, czy oglądający jest zalogowany w CRM; jeśli tak, pokazuje okolicę
+  crmProbe?: boolean;
   categories?: NearbyCategory[];
   zoom?: number;
   children: ReactNode;
@@ -41,9 +44,32 @@ function MapInner({
   const markers = useRef(new Map<string, Marker>());
   const [open, setOpen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const hasData = initial.some((c) => c.items.length > 0);
+  const [details, setDetails] = useState(detailsProp);
+  const [serverCats, setServerCats] = useState(initial);
+  const hasData = serverCats.some((c) => c.items.length > 0);
   const [categories, setCategories] = useState(hasData ? initial : []);
   const [status, setStatus] = useState<"ok" | "loading" | "error">(hasData ? "ok" : "loading");
+
+  // strona publiczna: okolica z odległościami tylko dla zalogowanych w CRM (sama strona zostaje statyczna)
+  useEffect(() => {
+    if (!crmProbe) return;
+    let alive = true;
+    fetch(`/api/crm/okolica?lat=${home.lat}&lng=${home.lng}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { categories: NearbyCategory[] } | null) => {
+        if (!alive || !j) return;
+        if (j.categories.some((c) => c.items.length > 0)) {
+          setServerCats(j.categories);
+          setCategories(j.categories);
+          setStatus("ok");
+        }
+        setDetails(true);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [crmProbe, home.lat, home.lng]);
   const [attempt, setAttempt] = useState(0);
 
   // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS),
@@ -166,6 +192,7 @@ function MapInner({
     <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
       <div className="flex flex-col gap-10 p-8 md:p-14">
         {children}
+        {details && crmProbe && <p className="-mt-4 text-xs uppercase tracking-[0.18em] text-gold-300">Widoczne tylko dla zalogowanych w CRM</p>}
         {details && (
         <div className="border-t border-pearl/15">
             {CATEGORY_TABS.map((t) => ({ ...t, items: categories.find((c) => c.key === t.key)?.items ?? [] })).map((c) => (

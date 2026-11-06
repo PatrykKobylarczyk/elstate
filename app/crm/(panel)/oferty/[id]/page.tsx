@@ -55,8 +55,10 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
       <Link href="/crm/oferty" className="text-sm font-semibold text-graphite/55 hover:text-plum-900">← Oferty</Link>
       <PageHead title={l.title} sub={<Badge tone={listingTone[l.status]}>{label(listingStatuses, l.status)}</Badge>}>
         <Link href={`/crm/oferty/${l.id}/edycja`} className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">Edytuj ofertę</Link>
-        {isPublic && (
-          <a href={`/oferty/${l.slug}`} target="_blank" rel="noreferrer" className={btnGhost}>Zobacz na stronie ↗</a>
+        {isPublic ? (
+          <a href={`/oferty/${l.slug}`} target="_blank" rel="noreferrer" className={btnGhost}>Zobacz ofertę na stronie ↗</a>
+        ) : (
+          <span className={`${btnGhost} cursor-not-allowed opacity-50`} title="Oferta nie jest opublikowana. Ustaw status „Aktywna” albo „Rezerwacja”.">Zobacz ofertę na stronie</span>
         )}
       </PageHead>
 
