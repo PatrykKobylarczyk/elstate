@@ -9,9 +9,11 @@ import ListingCard from "@/components/ListingCard";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import Gallery, { OpenGallery } from "@/components/offer/Gallery";
 import ShareButton from "@/components/offer/ShareButton";
+import LocationMap from "@/components/offer/LocationMap";
 import Expandable from "@/components/offer/Expandable";
 import StickyBar from "@/components/offer/StickyBar";
 import { geocode } from "@/lib/geocode";
+import { nearby } from "@/lib/nearby";
 import { getListing, getListings } from "@/lib/listings";
 import { contact, floorLabel, formatArea, formatPrice, pricePerM2, roomsLabel, team } from "@/lib/data";
 
@@ -49,13 +51,14 @@ export default async function Oferta({ params }: Props) {
   const perM2 = pricePerM2(l);
   const floor = l.floorsTotal ? `${floorLabel(l.floor)} z ${l.floorsTotal}` : floorLabel(l.floor);
   const deal = l.deal === "sprzedaz" ? "Sprzedaż" : "Wynajem";
-  const agent = team.find((t) => t.email === l.agentEmail) ?? team[0];
+  // na razie przy każdej ofercie kontakt do Maxa (pierwsza osoba w zespole)
+  const agent = team[0];
   const paragraphs = l.description?.split(/\n{2,}/).filter(Boolean) ?? [];
   const place = [l.street, l.district, l.city].filter(Boolean).join(", ");
   // mapa: współrzędne z geokodowania (pewne), a gdy się nie uda, zapytanie tekstowe z „Polska”
   const spot = await geocode({ street: l.street, district: l.district, city: l.city });
   const mapQuery = spot ? `${spot.lat},${spot.lng}` : encodeURIComponent([l.street, l.district, l.city, "Polska"].filter(Boolean).join(", "));
-  const mapZoom = spot && (l.street || l.district) ? 15 : 13;
+  const around = spot ? await nearby(spot) : [];
   const similar = all
     .filter((x) => x.slug !== l.slug && x.deal === l.deal)
     .sort((a, b) => Number(b.district === l.district) - Number(a.district === l.district) || Math.abs(a.price - l.price) - Math.abs(b.price - l.price))
@@ -80,6 +83,27 @@ export default async function Oferta({ params }: Props) {
     ["Rok budowy", l.year ? String(l.year) : null],
     ["Lokalizacja", place],
   ].filter((f): f is [string, string] => Boolean(f[1]));
+
+  const locationHead = (
+    <>
+      <div>
+        <p className="eyebrow text-gold-300">lokalizacja</p>
+        <h2 className="mt-6 font-display text-[clamp(2.4rem,4.4vw,4.4rem)] leading-[1]">
+          {l.district || l.city}
+          <em className="block text-gold-400">{l.city}</em>
+        </h2>
+      </div>
+      <div>
+        {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
+        {spot && (
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Rozwiń kategorię, aby zobaczyć miejsca w okolicy na mapie. Odległości w linii prostej, czas przejścia orientacyjny.</p>
+        )}
+        <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="btn-ghost mt-8 text-pearl">
+          Otwórz w Mapach Google <Arrow />
+        </a>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -219,41 +243,26 @@ export default async function Oferta({ params }: Props) {
         </div>
       </section>
 
-      {/* LOKALIZACJA */}
+      {/* LOKALIZACJA: adres na mapie i okolica w kategoriach (jak w N75) */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
-        <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="flex flex-col justify-between gap-10 p-8 md:p-14">
-            <div>
-              <p className="eyebrow text-gold-300">lokalizacja</p>
-              <h2 className="mt-6 font-display text-[clamp(2.4rem,4.4vw,4.4rem)] leading-[1]">
-                {l.district || l.city}
-                <em className="block text-gold-400">{l.city}</em>
-              </h2>
-            </div>
-            <div>
-              {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Mapa pokazuje okolicę. Dokładny adres podajemy przy umawianiu prezentacji.</p>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-ghost mt-8 text-pearl"
-              >
-                Otwórz w Mapach Google <Arrow />
-              </a>
+        {spot ? (
+          <LocationMap home={spot} pinLabel={l.street || l.district || l.city} categories={around} zoom={l.street ? 16 : 14}>
+            {locationHead}
+          </LocationMap>
+        ) : (
+          <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="flex flex-col gap-10 p-8 md:p-14">{locationHead}</div>
+            <div className="relative min-h-[22rem] lg:min-h-[34rem]">
+              <iframe
+                title={`Mapa: ${place}`}
+                src={`https://maps.google.com/maps?q=${mapQuery}&z=13&hl=pl&output=embed`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 h-full w-full border-0 [filter:grayscale(1)_sepia(0.35)_contrast(1.05)_brightness(0.92)]"
+              />
             </div>
           </div>
-          <div className="relative min-h-[22rem] lg:min-h-[34rem]">
-            <iframe
-              title={`Mapa: ${place}`}
-              src={`https://maps.google.com/maps?q=${mapQuery}&z=${mapZoom}&hl=pl&output=embed`}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="absolute inset-0 h-full w-full border-0 [filter:grayscale(1)_sepia(0.35)_contrast(1.05)_brightness(0.92)]"
-            />
-            <div aria-hidden className="pointer-events-none absolute inset-0 bg-plum-900/15 mix-blend-multiply" />
-          </div>
-        </div>
+        )}
       </section>
 
       {/* KREDYT (tylko sprzedaż) */}
@@ -273,11 +282,11 @@ export default async function Oferta({ params }: Props) {
         </section>
       )}
 
-      {/* OPIEKUN + FORMULARZ */}
+      {/* OFERTA: KONTAKT + FORMULARZ */}
       <section id="prezentacja" className="scroll-mt-24 bg-pearl p-3 md:p-4">
         <div className="mx-auto grid max-w-[96rem] gap-10 overflow-hidden rounded-[2rem] bg-plum-900 p-6 text-pearl md:rounded-[2.5rem] md:p-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div className="flex flex-col">
-            <p className="eyebrow text-gold-300">opiekun oferty</p>
+            <p className="eyebrow text-gold-300">oferta</p>
             <h2 className="mt-6 font-display text-[clamp(2.4rem,4.4vw,4.4rem)] leading-[1]">
               Umówmy <em className="text-gold-400">prezentację.</em>
             </h2>
