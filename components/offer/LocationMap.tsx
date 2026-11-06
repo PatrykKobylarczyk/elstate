@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Map as LMap, LayerGroup, Marker } from "leaflet";
-import type { NearbyCategory, Poi } from "@/lib/nearby";
+import { ENDPOINTS, overpassQuery, parseNearby, roundSpot, type El, type NearbyCategory, type Poi } from "@/lib/nearby-core";
 
 // Mapa okolicy oferty jak w N75: znacznik pod adresem oferty, a po rozwinięciu kategorii
 // (edukacja, zdrowie, zieleń…) punkty na mapie z linią do oferty i odległością.
@@ -21,7 +21,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 export default function LocationMap({
   home,
   pinLabel,
-  categories,
+  categories: initial,
   zoom = 16,
   children,
 }: {
@@ -38,6 +38,31 @@ export default function LocationMap({
   const markers = useRef(new Map<string, Marker>());
   const [open, setOpen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [categories, setCategories] = useState(initial);
+
+  // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS)
+  useEffect(() => {
+    if (initial.length) return;
+    let alive = true;
+    const h = roundSpot({ lat: home.lat, lng: home.lng });
+    const q = encodeURIComponent(overpassQuery(h.lat, h.lng));
+    (async () => {
+      for (const url of ENDPOINTS) {
+        try {
+          const r = await fetch(`${url}?data=${q}`, { signal: AbortSignal.timeout(15000) });
+          if (!r.ok) continue;
+          const cats = parseNearby(h, ((await r.json()) as { elements: El[] }).elements);
+          if (alive) setCategories(cats);
+          return;
+        } catch {
+          // spróbuj drugiego serwera
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [initial, home.lat, home.lng]);
 
   useEffect(() => {
     let alive = true;

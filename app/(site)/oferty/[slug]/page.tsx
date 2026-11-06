@@ -95,7 +95,7 @@ export default async function Oferta({ params }: Props) {
       </div>
       <div>
         {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
-        {around.length > 0 && (
+        {spot && (
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Rozwiń kategorię, aby zobaczyć miejsca w okolicy na mapie. Odległości w linii prostej, czas przejścia orientacyjny.</p>
         )}
         <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="btn-ghost mt-8 text-pearl">
