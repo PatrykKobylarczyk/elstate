@@ -5,6 +5,9 @@ import { PageHead } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { pickers } from "@/lib/crm/options";
 
+// zapis oferty pobiera potem w tle współrzędne i okolicę (after w saveListing)
+export const maxDuration = 60;
+
 export const metadata: Metadata = { title: "Nowa oferta" };
 
 export default async function Nowa() {

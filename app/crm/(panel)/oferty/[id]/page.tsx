@@ -136,7 +136,7 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
       </div>
 
       <section className="mt-6">
-        <LocationMap home={spot} queries={queries} pinLabel={l.street || l.district || l.city} details crmProbe zoom={l.street ? 16 : 14}>
+        <LocationMap home={spot} queries={queries} pinLabel={l.street || l.district || l.city} categories={l.nearby ?? []} slug={l.slug} details crmProbe zoom={l.street ? 16 : 14}>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Okolica</p>
             <h2 className="mt-3 font-display text-3xl">{place || l.city}</h2>

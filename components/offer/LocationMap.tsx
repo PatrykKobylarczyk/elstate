@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Map as LMap, LayerGroup, Marker } from "leaflet";
-import { CATEGORY_TABS, ENDPOINTS, overpassQuery, parseNearby, roundSpot, type El, type NearbyCategory, type Poi } from "@/lib/nearby-core";
+import { CATEGORY_TABS, fetchNearby, hasPlaces, type NearbyCategory, type Poi } from "@/lib/nearby-core";
 
 // Mapa okolicy oferty jak w N75: znacznik pod adresem oferty, a po rozwinięciu kategorii
 // (edukacja, zdrowie, zieleń…) punkty na mapie z linią do oferty i odległością.
@@ -24,6 +24,7 @@ function MapInner({
   categories: initial = [],
   details: detailsProp = false,
   crmProbe = false,
+  slug,
   zoom = 16,
   children,
 }: {
@@ -33,6 +34,8 @@ function MapInner({
   details?: boolean;
   // crmProbe: strona publiczna pyta, czy oglądający jest zalogowany w CRM; jeśli tak, pokazuje okolicę
   crmProbe?: boolean;
+  // slug oferty: okolica pobrana raz zapisuje się przy ofercie w CRM
+  slug?: string;
   categories?: NearbyCategory[];
   zoom?: number;
   children: ReactNode;
@@ -54,7 +57,7 @@ function MapInner({
   useEffect(() => {
     if (!crmProbe) return;
     let alive = true;
-    fetch(`/api/crm/okolica?lat=${home.lat}&lng=${home.lng}`, { cache: "no-store" })
+    fetch(`/api/crm/okolica?slug=${encodeURIComponent(slug ?? "")}&lat=${home.lat}&lng=${home.lng}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { categories: NearbyCategory[] } | null) => {
         if (!alive || !j) return;
@@ -69,41 +72,27 @@ function MapInner({
     return () => {
       alive = false;
     };
-  }, [crmProbe, home.lat, home.lng]);
+  }, [crmProbe, slug, home.lat, home.lng]);
   const [attempt, setAttempt] = useState(0);
 
-  // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS),
-  // po kolei z kilku serwerów
+  // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (wszystkie serwery naraz)
+  // i zapisz przy ofercie, żeby następnym razem były od razu
   useEffect(() => {
     if (hasData || !details) return;
     let alive = true;
     setStatus("loading");
-    const h = roundSpot({ lat: home.lat, lng: home.lng });
-    const body = new URLSearchParams({ data: overpassQuery(h.lat, h.lng) });
-    (async () => {
-      for (const url of ENDPOINTS) {
-        try {
-          const r = await fetch(url, { method: "POST", body, signal: AbortSignal.timeout(25000) });
-          if (!r.ok) {
-            console.warn("[okolica]", url, r.status);
-            continue;
-          }
-          const cats = parseNearby(h, ((await r.json()) as { elements: El[] }).elements);
-          if (alive) {
-            setCategories(cats);
-            setStatus("ok");
-          }
-          return;
-        } catch (e) {
-          console.warn("[okolica]", url, e);
-        }
-      }
-      if (alive) setStatus("error");
-    })();
+    fetchNearby({ lat: home.lat, lng: home.lng }, 30000).then((cats) => {
+      if (!alive) return;
+      if (hasPlaces(cats)) {
+        setCategories(cats);
+        setStatus("ok");
+        if (slug) fetch("/api/crm/okolica", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, categories: cats }) }).catch(() => {});
+      } else setStatus(cats ? "ok" : "error");
+    });
     return () => {
       alive = false;
     };
-  }, [hasData, details, home.lat, home.lng, attempt]);
+  }, [hasData, details, slug, home.lat, home.lng, attempt]);
 
   useEffect(() => {
     let alive = true;

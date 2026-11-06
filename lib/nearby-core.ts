@@ -104,3 +104,29 @@ export function parseNearby(home: { lat: number; lng: number }, elements: El[]):
 
 // ~11 m dokładności wystarczy, a lepiej trafia w cache
 export const roundSpot = (spot: { lat: number; lng: number }) => ({ lat: Number(spot.lat.toFixed(4)), lng: Number(spot.lng.toFixed(4)) });
+
+// Zapytanie do wszystkich serwerów Overpass naraz; wygrywa pierwsza poprawna odpowiedź.
+export async function fetchNearby(spot: { lat: number; lng: number }, timeoutMs: number, init: RequestInit = {}): Promise<NearbyCategory[] | null> {
+  const home = roundSpot(spot);
+  const body = new URLSearchParams({ data: overpassQuery(home.lat, home.lng) }).toString();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const elements = await Promise.any(
+      ENDPOINTS.map(async (url) => {
+        const r = await fetch(url, { ...init, method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded", ...(init.headers ?? {}) }, signal: ctrl.signal });
+        if (!r.ok) throw new Error(`${url} ${r.status}`);
+        return ((await r.json()) as { elements: El[] }).elements;
+      }),
+    );
+    return parseNearby(home, elements);
+  } catch (e) {
+    console.warn("[okolica]", e);
+    return null;
+  } finally {
+    clearTimeout(timer);
+    ctrl.abort();
+  }
+}
+
+export const hasPlaces = (c: NearbyCategory[] | null | undefined): c is NearbyCategory[] => Boolean(c?.some((x) => x.items.length > 0));
