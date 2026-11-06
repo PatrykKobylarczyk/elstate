@@ -95,9 +95,7 @@ export default async function Oferta({ params }: Props) {
       </div>
       <div>
         {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
-        {spot && (
-          <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Rozwiń kategorię, aby zobaczyć miejsca w okolicy na mapie. Odległości w linii prostej, czas przejścia orientacyjny.</p>
-        )}
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Rozwiń kategorię, aby zobaczyć miejsca w okolicy na mapie. Odległości w linii prostej, czas przejścia orientacyjny.</p>
         <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="btn-ghost mt-8 text-pearl">
           Otwórz w Mapach Google <Arrow />
         </a>
@@ -245,24 +243,15 @@ export default async function Oferta({ params }: Props) {
 
       {/* LOKALIZACJA: adres na mapie i okolica w kategoriach (jak w N75) */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
-        {spot ? (
-          <LocationMap home={spot} pinLabel={l.street || l.district || l.city} categories={around} zoom={l.street ? 16 : 14}>
-            {locationHead}
-          </LocationMap>
-        ) : (
-          <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
-            <div className="flex flex-col gap-10 p-8 md:p-14">{locationHead}</div>
-            <div className="relative min-h-[22rem] lg:min-h-[34rem]">
-              <iframe
-                title={`Mapa: ${place}`}
-                src={`https://maps.google.com/maps?q=${mapQuery}&z=13&hl=pl&output=embed`}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 h-full w-full border-0 [filter:grayscale(1)_sepia(0.35)_contrast(1.05)_brightness(0.92)]"
-              />
-            </div>
-          </div>
-        )}
+        <LocationMap
+          home={spot}
+          queries={[[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
+          pinLabel={l.street || l.district || l.city}
+          categories={around}
+          zoom={l.street ? 16 : 14}
+        >
+          {locationHead}
+        </LocationMap>
       </section>
 
       {/* KREDYT (tylko sprzedaż) */}
