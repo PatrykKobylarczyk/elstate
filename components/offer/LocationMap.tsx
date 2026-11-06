@@ -52,6 +52,8 @@ function MapInner({
   const hasData = serverCats.some((c) => c.items.length > 0);
   const [categories, setCategories] = useState(hasData ? initial : []);
   const [status, setStatus] = useState<"ok" | "loading" | "error">(hasData ? "ok" : "loading");
+  // przyczyny porażek (serwer i przeglądarka), widoczne w CRM pod komunikatem o błędzie
+  const [why, setWhy] = useState<{ server: string[]; browser: string[] }>({ server: [], browser: [] });
 
   // strona publiczna: okolica z odległościami tylko dla zalogowanych w CRM (sama strona zostaje statyczna)
   useEffect(() => {
@@ -59,8 +61,9 @@ function MapInner({
     let alive = true;
     fetch(`/api/crm/okolica?slug=${encodeURIComponent(slug ?? "")}&lat=${home.lat}&lng=${home.lng}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
-      .then((j: { categories: NearbyCategory[] } | null) => {
+      .then((j: { categories: NearbyCategory[]; errors?: string[] } | null) => {
         if (!alive || !j) return;
+        if (j.errors?.length) setWhy((w) => ({ ...w, server: j.errors! }));
         if (j.categories.some((c) => c.items.length > 0)) {
           setServerCats(j.categories);
           setCategories(j.categories);
@@ -81,8 +84,10 @@ function MapInner({
     if (hasData || !details) return;
     let alive = true;
     setStatus("loading");
-    fetchNearby({ lat: home.lat, lng: home.lng }, 30000).then((cats) => {
+    const errors: string[] = [];
+    fetchNearby({ lat: home.lat, lng: home.lng }, 30000, {}, errors).then((cats) => {
       if (!alive) return;
+      setWhy((w) => ({ ...w, browser: errors }));
       if (hasPlaces(cats)) {
         setCategories(cats);
         setStatus("ok");
@@ -211,6 +216,12 @@ function MapInner({
                         <button type="button" onClick={() => setAttempt((n) => n + 1)} className="text-gold-300 underline underline-offset-4">
                           Spróbuj ponownie
                         </button>
+                        {(why.server.length > 0 || why.browser.length > 0) && (
+                          <span className="mt-2 block text-xs text-pearl/40">
+                            {why.server.length > 0 && <>Serwer: {why.server.join("; ")}. </>}
+                            {why.browser.length > 0 && <>Telefon: {why.browser.join("; ")}.</>}
+                          </span>
+                        )}
                       </>
                     )}
                   </p>

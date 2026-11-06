@@ -52,6 +52,7 @@ export const ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
 
 // zakładki widoczne zawsze, także zanim wczytają się miejsca (jak w N75)
@@ -106,7 +107,13 @@ export function parseNearby(home: { lat: number; lng: number }, elements: El[]):
 export const roundSpot = (spot: { lat: number; lng: number }) => ({ lat: Number(spot.lat.toFixed(4)), lng: Number(spot.lng.toFixed(4)) });
 
 // Zapytanie do wszystkich serwerów Overpass naraz; wygrywa pierwsza poprawna odpowiedź.
-export async function fetchNearby(spot: { lat: number; lng: number }, timeoutMs: number, init: RequestInit = {}): Promise<NearbyCategory[] | null> {
+// errors: opcjonalnie zbiera przyczyny porażek (host + kod HTTP / błąd), żeby dało się je pokazać w CRM
+export async function fetchNearby(
+  spot: { lat: number; lng: number },
+  timeoutMs: number,
+  init: RequestInit = {},
+  errors: string[] = [],
+): Promise<NearbyCategory[] | null> {
   const home = roundSpot(spot);
   const body = new URLSearchParams({ data: overpassQuery(home.lat, home.lng) }).toString();
   const ctrl = new AbortController();
@@ -114,9 +121,18 @@ export async function fetchNearby(spot: { lat: number; lng: number }, timeoutMs:
   try {
     const elements = await Promise.any(
       ENDPOINTS.map(async (url) => {
-        const r = await fetch(url, { ...init, method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded", ...(init.headers ?? {}) }, signal: ctrl.signal });
-        if (!r.ok) throw new Error(`${url} ${r.status}`);
-        return ((await r.json()) as { elements: El[] }).elements;
+        const host = new URL(url).host;
+        try {
+          const r = await fetch(url, { ...init, method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded", ...(init.headers ?? {}) }, signal: ctrl.signal });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const j = (await r.json()) as { elements?: El[]; remark?: string };
+          if (!j.elements?.length && j.remark) throw new Error(j.remark.slice(0, 80));
+          return j.elements ?? [];
+        } catch (e) {
+          const msg = ctrl.signal.aborted ? "brak odpowiedzi" : e instanceof Error ? e.message : String(e);
+          errors.push(`${host}: ${msg}`);
+          throw e;
+        }
       }),
     );
     return parseNearby(home, elements);
