@@ -1,5 +1,6 @@
 // Schemat bazy CRM (Postgres, Drizzle). Zmiany: edytuj ten plik i uruchom `npm run db:generate`,
 // migracje w drizzle/ wykonują się same przy buildzie (scripts/migrate.mjs).
+import type { NearbyCategory } from "../nearby-core";
 import { sql } from "drizzle-orm";
 import { boolean, doublePrecision, index, integer, jsonb, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
@@ -81,6 +82,8 @@ export const listings = pgTable(
     images: jsonb("images").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
+    // okolica (szkoły, sklepy, zieleń… z odległościami) pobrana raz z OpenStreetMap i zapisana przy ofercie
+    nearby: jsonb("nearby").$type<NearbyCategory[]>(),
     featured: boolean("featured").notNull().default(false),
     // dane wewnętrzne, nigdy nie trafiają na stronę
     ownerId: integer("owner_id").references(() => clients.id, { onDelete: "set null" }),

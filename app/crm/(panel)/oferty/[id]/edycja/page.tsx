@@ -12,6 +12,9 @@ import { pickers } from "@/lib/crm/options";
 import { listings } from "@/lib/crm/schema";
 import { deleteListing } from "../../../actions";
 
+// zapis oferty pobiera potem w tle współrzędne i okolicę (after w saveListing)
+export const maxDuration = 60;
+
 export const metadata: Metadata = { title: "Edycja oferty" };
 
 export default async function EdycjaOferty({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ zapisano?: string }> }) {

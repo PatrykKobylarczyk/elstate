@@ -2,6 +2,7 @@
 
 import { and, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { hashPassword, log, randomPassword, requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
@@ -9,6 +10,7 @@ import { categoriesCrm, clientKinds, deals, leadStatuses, listingStatuses } from
 import { ingestNbot } from "@/lib/crm/leads";
 import { clients, leads, listings, notes, sessions, users } from "@/lib/crm/schema";
 import { removeImage, saveImage } from "@/lib/crm/storage";
+import { storeArea } from "@/lib/crm/area";
 
 type State = { error?: string; ok?: string } | undefined;
 
@@ -111,11 +113,15 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   }
   let oldSlug = "";
   let savedId = id;
+  let fetchArea = true;
   if (id) {
     const [old] = await d.select().from(listings).where(eq(listings.id, id));
     if (!old) return { error: "Oferta nie istnieje." };
     oldSlug = old.slug;
-    await d.update(listings).set(values).where(eq(listings.id, id));
+    const moved = old.street !== values.street || old.district !== values.district || old.city !== values.city;
+    fetchArea = moved || !old.nearby || old.lat == null;
+    // nowy adres: stare współrzędne i okolica nie pasują, pobierzemy je na nowo
+    await d.update(listings).set(moved ? { ...values, lat: null, lng: null, nearby: null } : values).where(eq(listings.id, id));
     for (const url of old.images) if (!images.includes(url)) await removeImage(url);
   } else {
     const [row] = await d.insert(listings).values(values).returning({ id: listings.id });
@@ -124,6 +130,8 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   // tylko jedna oferta wyróżniona na stronie głównej
   if (values.featured) await d.update(listings).set({ featured: false }).where(and(eq(listings.featured, true), ne(listings.id, savedId!)));
   await log("listing_saved", { userId: user.id, subject: slug, meta: { id: savedId, status } });
+  // współrzędne i okolica (szkoły, sklepy, zieleń…) pobierają się w tle po zapisie i zostają przy ofercie
+  if (fetchArea && savedId) after(() => storeArea(savedId!));
   refreshSite([slug, oldSlug]);
   if (!id) redirect(`/crm/oferty/${savedId}/edycja?zapisano=1`);
   return { ok: status === "aktywna" || status === "rezerwacja" ? "Zapisano. Oferta jest na stronie." : "Zapisano. Oferta nie jest widoczna na stronie (status: " + listingStatuses.find(([k]) => k === status)?.[1].toLowerCase() + ")." };

@@ -245,6 +245,7 @@ export default async function Oferta({ params }: Props) {
           queries={[[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
           pinLabel={l.street || l.district || l.city}
           crmProbe
+          slug={l.slug}
           zoom={l.street ? 16 : 14}
         >
           {locationHead}
