@@ -8,7 +8,7 @@ import { Badge, Field, btnGhost, card, input, leadTone, pln, when } from "@/comp
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { label, leadSources, leadStatuses } from "@/lib/crm/labels";
-import { leads, users } from "@/lib/crm/schema";
+import { clients, leads, searchMatches, users } from "@/lib/crm/schema";
 import { toLocalInput } from "@/lib/crm/time";
 import { leadToClient, leadToListing, updateLead } from "../../actions";
 
@@ -22,6 +22,8 @@ export default async function Lead({ params }: { params: Promise<{ id: string }>
   const [l] = await d.select().from(leads).where(eq(leads.id, id));
   if (!l) notFound();
   const team = await d.select({ id: users.id, name: users.name }).from(users).where(eq(users.active, true));
+  // klienci, których poszukiwaniom odpowiada to ogłoszenie
+  const fits = await d.selectDistinct({ id: clients.id, name: clients.name }).from(searchMatches).innerJoin(clients, eq(clients.id, searchMatches.clientId)).where(eq(searchMatches.leadId, id));
 
   return (
     <>
@@ -34,6 +36,14 @@ export default async function Lead({ params }: { params: Promise<{ id: string }>
             {l.portal ?? label(leadSources, l.source)} · dodane {when(l.createdAt)}
             {l.seenCount > 1 && <Badge tone="gold">ogłoszenie przyszło {l.seenCount}×</Badge>}
           </p>
+          {fits.length > 0 && (
+            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-semibold text-plum-900">Pasuje do klienta:</span>
+              {fits.map((c) => (
+                <Link key={c.id} href={`/crm/klienci/${c.id}#poszukiwania`} className="rounded-full bg-plum-900 px-3 py-0.5 text-xs font-semibold text-pearl hover:bg-plum-700">{c.name}</Link>
+              ))}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {l.phone && <a href={`tel:${l.phone.replace(/\s/g, "")}`} className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">Zadzwoń {l.phone}</a>}

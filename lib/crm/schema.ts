@@ -127,6 +127,53 @@ export const leads = pgTable(
   (t) => [uniqueIndex("leads_url_key_idx").on(t.urlKey), index("leads_status_idx").on(t.status)],
 );
 
+// Czego szuka klient (kupujący, najemca). Nowe ogłoszenia z nbota porównujemy z tymi kryteriami
+// i o pasujących powiadamiamy agenta (push, pulpit CRM, opcjonalnie e-mail). Puste pole = bez ograniczeń.
+export const clientSearches = pgTable(
+  "client_searches",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    active: boolean("active").notNull().default(true),
+    // sprzedaz | wynajem | null (obojętnie)
+    deal: text("deal"),
+    // mieszkania | domy | dzialki | lokale | null (obojętnie)
+    category: text("category"),
+    // miasta, dzielnice, ulice; ogłoszenie pasuje, gdy zawiera którąkolwiek z nich
+    locations: jsonb("locations").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    priceMin: integer("price_min"),
+    priceMax: integer("price_max"),
+    areaMin: real("area_min"),
+    areaMax: real("area_max"),
+    roomsMin: integer("rooms_min"),
+    roomsMax: integer("rooms_max"),
+    // słowa, których ogłoszenie nie może zawierać (np. „parter”, „do remontu”)
+    exclude: jsonb("exclude").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    // kogo powiadamiać; null = cały zespół
+    agentId: integer("agent_id").references(() => users.id, { onDelete: "set null" }),
+    notifyEmail: boolean("notify_email").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("client_searches_client_idx").on(t.clientId)],
+);
+
+// Ogłoszenia (leady z nbota), które pasowały do poszukiwań klienta. Unikalna para = jedno powiadomienie.
+export const searchMatches = pgTable(
+  "search_matches",
+  {
+    id: serial("id").primaryKey(),
+    searchId: integer("search_id").notNull().references(() => clientSearches.id, { onDelete: "cascade" }),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    leadId: integer("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+    // ogłoszenie dopasowane wstecz przy zapisie kryteriów (bez powiadomienia)
+    backfill: boolean("backfill").notNull().default(false),
+    seenAt: timestamp("seen_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("search_matches_pair_idx").on(t.searchId, t.leadId), index("search_matches_client_idx").on(t.clientId, t.seenAt)],
+);
+
 // Notatki i historia kontaktu przy leadzie, kliencie lub ofercie
 export const notes = pgTable("notes", {
   id: serial("id").primaryKey(),
@@ -215,5 +262,6 @@ export type User = typeof users.$inferSelect;
 export type ListingRow = typeof listings.$inferSelect;
 export type LeadRow = typeof leads.$inferSelect;
 export type ClientRow = typeof clients.$inferSelect;
+export type ClientSearch = typeof clientSearches.$inferSelect;
 export type ListaItem = typeof listaItems.$inferSelect;
 export type ListaDevice = typeof listaDevices.$inferSelect;

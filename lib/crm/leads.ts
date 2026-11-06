@@ -1,6 +1,7 @@
 import "server-only";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
+import { matchNewLeads } from "./matches";
 import { parseNbotEmail } from "./nbot";
 import { notify } from "./push";
 import { audit, leads } from "./schema";
@@ -16,10 +17,13 @@ export async function ingestNbot(mail: { subject?: string; text?: string; html?:
   const d = await db();
   let added = 0;
   let repeated = 0;
+  // nowe i powtórzone ogłoszenia (np. po obniżce ceny) sprawdzamy z poszukiwaniami klientów
+  const ids: number[] = [];
   for (const p of parsed) {
     const values = { ...p, source: "nbot", status, message: mail.subject ?? null };
     if (!p.urlKey) {
-      await d.insert(leads).values(values);
+      const [row] = await d.insert(leads).values(values).returning({ id: leads.id });
+      ids.push(row.id);
       added++;
       continue;
     }
@@ -37,7 +41,8 @@ export async function ingestNbot(mail: { subject?: string; text?: string; html?:
           updatedAt: sql`now()`,
         },
       })
-      .returning({ seen: leads.seenCount });
+      .returning({ id: leads.id, seen: leads.seenCount });
+    ids.push(row.id);
     if (row.seen > 1) repeated++;
     else added++;
   }
@@ -51,7 +56,8 @@ export async function ingestNbot(mail: { subject?: string; text?: string; html?:
       tag: "elstate-nbot",
     });
   }
-  return { added, repeated, total: parsed.length };
+  const matched = await matchNewLeads(ids);
+  return { added, repeated, total: parsed.length, matched };
 }
 
 export async function ingestContactForm(f: { name: string; reach: string; subject?: string; message: string }) {

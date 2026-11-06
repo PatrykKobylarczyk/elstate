@@ -72,4 +72,5 @@ export const auditLabels: Record<string, string> = {
   lead_saved: "Zmiana leada",
   lead_import: "Import z nbot",
   client_saved: "Zapis klienta",
+  search_saved: "Poszukiwania klienta",
 };
