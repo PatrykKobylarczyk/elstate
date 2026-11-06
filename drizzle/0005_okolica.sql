@@ -1,1 +1,1 @@
-ALTER TABLE "listings" ADD COLUMN "nearby" jsonb;
+ALTER TABLE "listings" ADD COLUMN IF NOT EXISTS "nearby" jsonb;

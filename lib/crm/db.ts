@@ -17,6 +17,8 @@ export const dbConfigured = () => Boolean(process.env.DATABASE_URL || process.en
 async function connect(): Promise<DB> {
   if (process.env.DATABASE_URL) {
     const client = postgres(process.env.DATABASE_URL, { max: 5, prepare: false, ssl: process.env.DATABASE_URL.includes("localhost") ? false : "require" });
+    // kolumna z okolicą: na wypadek gdyby build ruszył bez DATABASE_URL i migracja 0005 się nie wykonała
+    await client`ALTER TABLE "listings" ADD COLUMN IF NOT EXISTS "nearby" jsonb`.catch((e) => console.error("[db] nearby", e));
     return drizzlePg(client, { schema });
   }
   const { PGlite } = await import("@electric-sql/pglite");
