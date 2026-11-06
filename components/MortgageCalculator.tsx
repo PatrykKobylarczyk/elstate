@@ -51,10 +51,6 @@ export default function MortgageCalculator({ initialPrice = 750000 }: { initialP
         <Slider label="Cena nieruchomości" value={price} min={200000} max={3000000} step={10000} format={(v) => `${pln.format(v)} zł`} onChange={setPrice} />
         <Slider label="Wkład własny" value={down} min={10} max={60} step={1} format={(v) => `${v}%`} onChange={setDown} />
         <Slider label="Okres kredytowania" value={years} min={5} max={35} step={1} format={(v) => `${v} lat`} onChange={setYears} />
-        <div className="flex items-baseline justify-between gap-4">
-          <span className="text-sm text-graphite/60">Oprocentowanie</span>
-          <span className="font-display text-xl tabular-nums text-graphite">{RATE.toFixed(1).replace(".", ",")}%</span>
-        </div>
       </div>
       <div className="flex flex-col justify-between gap-8 border-t border-graphite/10 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0">
         <div>
@@ -69,7 +65,7 @@ export default function MortgageCalculator({ initialPrice = 750000 }: { initialP
           <div><dt className="text-graphite/55">Wkład własny</dt><dd className="mt-1">{pln.format(price - loan)} zł</dd></div>
         </dl>
         <p className="text-xs leading-relaxed text-graphite/45">
-          Wyliczenie orientacyjne, nie jest ofertą banku. Przyjęto oprocentowanie 5,5% w skali roku.
+          Wyliczenie orientacyjne, nie jest ofertą banku.
         </p>
       </div>
     </div>

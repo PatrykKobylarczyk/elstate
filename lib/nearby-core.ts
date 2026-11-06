@@ -11,36 +11,36 @@ const CATS: Cat[] = [
   {
     key: "edu",
     label: "Edukacja",
-    radius: 1500,
+    radius: 1200,
     limit: 5,
     filters: ['["amenity"~"^(school|kindergarten|university|college)$"]', '["amenity"="childcare"]'],
   },
   {
     key: "zdr",
     label: "Zdrowie i opieka",
-    radius: 1500,
+    radius: 1200,
     limit: 4,
     filters: ['["amenity"~"^(hospital|clinic|doctors)$"]', '["amenity"="pharmacy"]'],
   },
-  { key: "ziel", label: "Zieleń", radius: 2000, limit: 4, filters: ['["leisure"~"^(park|garden)$"]', '["landuse"="forest"]'] },
+  { key: "ziel", label: "Zieleń", radius: 1500, limit: 4, filters: ['["leisure"~"^(park|garden|nature_reserve)$"]'] },
   {
     key: "kult",
     label: "Kultura",
-    radius: 2500,
+    radius: 2000,
     limit: 3,
     filters: ['["amenity"~"^(theatre|cinema|arts_centre|library)$"]', '["tourism"~"^(museum|gallery)$"]'],
   },
   {
     key: "kom",
     label: "Komunikacja",
-    radius: 1200,
+    radius: 800,
     limit: 3,
     filters: ['["railway"~"^(tram_stop|station|halt)$"]', '["highway"="bus_stop"]'],
   },
   {
     key: "han",
     label: "Handel i usługi",
-    radius: 1000,
+    radius: 800,
     limit: 4,
     filters: ['["shop"~"^(supermarket|mall|convenience|bakery|greengrocer|chemist)$"]', '["amenity"="marketplace"]'],
   },
@@ -48,7 +48,14 @@ const CATS: Cat[] = [
 
 export type El = { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> };
 
-export const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter"];
+export const ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+
+// zakładki widoczne zawsze, także zanim wczytają się miejsca (jak w N75)
+export const CATEGORY_TABS = CATS.map(({ key, label }) => ({ key, label }));
 
 export function distance(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const R = 6371e3;
@@ -69,7 +76,7 @@ function matches(tags: Record<string, string>, filter: string) {
 
 export function overpassQuery(lat: number, lng: number) {
   const parts = CATS.flatMap((c) => c.filters.map((f) => `nwr(around:${c.radius},${lat},${lng})${f}["name"];`));
-  return `[out:json][timeout:20];(${parts.join("")});out center tags;`;
+  return `[out:json][timeout:25];(${parts.join("")});out center tags;`;
 }
 
 export function parseNearby(home: { lat: number; lng: number }, elements: El[]): NearbyCategory[] {
@@ -92,7 +99,7 @@ export function parseNearby(home: { lat: number; lng: number }, elements: El[]):
       .slice(0, c.limit)
       .map(({ name, lat, lng, m }) => ({ name, lat, lng, m: Math.round(m) }));
     return { key: c.key, label: c.label, items };
-  }).filter((c) => c.items.length > 0);
+  });
 }
 
 // ~11 m dokładności wystarczy, a lepiej trafia w cache

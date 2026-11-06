@@ -13,7 +13,6 @@ import LocationMap from "@/components/offer/LocationMap";
 import Expandable from "@/components/offer/Expandable";
 import StickyBar from "@/components/offer/StickyBar";
 import { geocode } from "@/lib/geocode";
-import { nearby } from "@/lib/nearby";
 import { getListing, getListings } from "@/lib/listings";
 import { contact, floorLabel, formatArea, formatPrice, pricePerM2, roomsLabel, team } from "@/lib/data";
 
@@ -58,7 +57,6 @@ export default async function Oferta({ params }: Props) {
   // mapa: współrzędne z geokodowania (pewne), a gdy się nie uda, zapytanie tekstowe z „Polska”
   const spot = await geocode({ street: l.street, district: l.district, city: l.city });
   const mapQuery = spot ? `${spot.lat},${spot.lng}` : encodeURIComponent([l.street, l.district, l.city, "Polska"].filter(Boolean).join(", "));
-  const around = spot ? await nearby(spot) : [];
   const similar = all
     .filter((x) => x.slug !== l.slug && x.deal === l.deal)
     .sort((a, b) => Number(b.district === l.district) - Number(a.district === l.district) || Math.abs(a.price - l.price) - Math.abs(b.price - l.price))
@@ -95,7 +93,6 @@ export default async function Oferta({ params }: Props) {
       </div>
       <div>
         {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-pearl/55">Rozwiń kategorię, aby zobaczyć miejsca w okolicy na mapie. Odległości w linii prostej, czas przejścia orientacyjny.</p>
         <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="btn-ghost mt-8 text-pearl">
           Otwórz w Mapach Google <Arrow />
         </a>
@@ -241,13 +238,13 @@ export default async function Oferta({ params }: Props) {
         </div>
       </section>
 
-      {/* LOKALIZACJA: adres na mapie i okolica w kategoriach (jak w N75) */}
+      {/* LOKALIZACJA: adres oferty na mapie; okolicę z odległościami widzą tylko zalogowani w CRM */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
         <LocationMap
           home={spot}
           queries={[[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
           pinLabel={l.street || l.district || l.city}
-          categories={around}
+          crmProbe
           zoom={l.street ? 16 : 14}
         >
           {locationHead}
