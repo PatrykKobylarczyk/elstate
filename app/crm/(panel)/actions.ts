@@ -125,7 +125,7 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   if (values.featured) await d.update(listings).set({ featured: false }).where(and(eq(listings.featured, true), ne(listings.id, savedId!)));
   await log("listing_saved", { userId: user.id, subject: slug, meta: { id: savedId, status } });
   refreshSite([slug, oldSlug]);
-  if (!id) redirect(`/crm/oferty/${savedId}?zapisano=1`);
+  if (!id) redirect(`/crm/oferty/${savedId}/edycja?zapisano=1`);
   return { ok: status === "aktywna" || status === "rezerwacja" ? "Zapisano. Oferta jest na stronie." : "Zapisano. Oferta nie jest widoczna na stronie (status: " + listingStatuses.find(([k]) => k === status)?.[1].toLowerCase() + ")." };
 }
 
@@ -152,7 +152,7 @@ export async function quickListingStatus(f: FormData) {
   if (status === "aktywna" || status === "rezerwacja") {
     const [cur] = await d.select().from(listings).where(eq(listings.id, id));
     // niekompletnej oferty nie publikujemy z listy; edytor pokaże, czego brakuje
-    if (!cur?.price || !cur.area || !cur.district) redirect(`/crm/oferty/${id}`);
+    if (!cur?.price || !cur.area || !cur.district) redirect(`/crm/oferty/${id}/edycja`);
   }
   const [row] = await d.update(listings).set({ status, updatedAt: new Date() }).where(eq(listings.id, id)).returning({ slug: listings.slug });
   await log("listing_saved", { userId: user.id, subject: row?.slug, meta: { id, status } });
@@ -282,7 +282,7 @@ export async function leadToListing(f: FormData) {
     .returning({ id: listings.id });
   await d.update(leads).set({ listingId: row.id, status: "pozyskany", updatedAt: new Date() }).where(eq(leads.id, id));
   await log("listing_saved", { userId: user.id, subject: String(row.id), meta: { fromLead: id } });
-  redirect(`/crm/oferty/${row.id}`);
+  redirect(`/crm/oferty/${row.id}/edycja`);
 }
 
 // ——— Notatki ———

@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Map as LMap, LayerGroup, Marker } from "leaflet";
-import { ENDPOINTS, overpassQuery, parseNearby, roundSpot, type El, type NearbyCategory, type Poi } from "@/lib/nearby-core";
+import { CATEGORY_TABS, ENDPOINTS, overpassQuery, parseNearby, roundSpot, type El, type NearbyCategory, type Poi } from "@/lib/nearby-core";
 
 // Mapa okolicy oferty jak w N75: znacznik pod adresem oferty, a po rozwinięciu kategorii
 // (edukacja, zdrowie, zieleń…) punkty na mapie z linią do oferty i odległością.
@@ -21,13 +21,16 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 function MapInner({
   home,
   pinLabel,
-  categories: initial,
+  categories: initial = [],
+  details = false,
   zoom = 16,
   children,
 }: {
   home: { lat: number; lng: number };
   pinLabel: string;
-  categories: NearbyCategory[];
+  // details: zakładki z okolicą (edukacja, zdrowie, zieleń…) i odległości; na stronie publicznej sama pinezka
+  details?: boolean;
+  categories?: NearbyCategory[];
   zoom?: number;
   children: ReactNode;
 }) {
@@ -38,36 +41,43 @@ function MapInner({
   const markers = useRef(new Map<string, Marker>());
   const [open, setOpen] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [categories, setCategories] = useState(initial);
-  const [loading, setLoading] = useState(initial.length === 0);
+  const hasData = initial.some((c) => c.items.length > 0);
+  const [categories, setCategories] = useState(hasData ? initial : []);
+  const [status, setStatus] = useState<"ok" | "loading" | "error">(hasData ? "ok" : "loading");
+  const [attempt, setAttempt] = useState(0);
 
-  // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS)
+  // serwer nie dostał miejsc z Overpass: pobierz je z przeglądarki (Overpass pozwala na CORS),
+  // po kolei z kilku serwerów
   useEffect(() => {
-    if (initial.length) return;
+    if (hasData || !details) return;
     let alive = true;
+    setStatus("loading");
     const h = roundSpot({ lat: home.lat, lng: home.lng });
-    const q = encodeURIComponent(overpassQuery(h.lat, h.lng));
+    const body = new URLSearchParams({ data: overpassQuery(h.lat, h.lng) });
     (async () => {
       for (const url of ENDPOINTS) {
         try {
-          const r = await fetch(`${url}?data=${q}`, { signal: AbortSignal.timeout(15000) });
-          if (!r.ok) continue;
+          const r = await fetch(url, { method: "POST", body, signal: AbortSignal.timeout(25000) });
+          if (!r.ok) {
+            console.warn("[okolica]", url, r.status);
+            continue;
+          }
           const cats = parseNearby(h, ((await r.json()) as { elements: El[] }).elements);
           if (alive) {
             setCategories(cats);
-            setLoading(false);
+            setStatus("ok");
           }
           return;
-        } catch {
-          // spróbuj drugiego serwera
+        } catch (e) {
+          console.warn("[okolica]", url, e);
         }
       }
-      if (alive) setLoading(false);
+      if (alive) setStatus("error");
     })();
     return () => {
       alive = false;
     };
-  }, [initial, home.lat, home.lng]);
+  }, [hasData, details, home.lat, home.lng, attempt]);
 
   useEffect(() => {
     let alive = true;
@@ -156,11 +166,9 @@ function MapInner({
     <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
       <div className="flex flex-col gap-10 p-8 md:p-14">
         {children}
-        {loading && <p className="text-sm text-pearl/55">Wczytuję miejsca w okolicy…</p>}
-        {!loading && categories.length === 0 && <p className="text-sm text-pearl/55">Nie udało się teraz wczytać miejsc w okolicy. Odśwież stronę za chwilę.</p>}
-        {categories.length > 0 && (
-          <div className="border-t border-pearl/15">
-            {categories.map((c) => (
+        {details && (
+        <div className="border-t border-pearl/15">
+            {CATEGORY_TABS.map((t) => ({ ...t, items: categories.find((c) => c.key === t.key)?.items ?? [] })).map((c) => (
               <details
                 key={c.key}
                 open={open === c.key}
@@ -177,6 +185,20 @@ function MapInner({
                     <span aria-hidden className="text-lg leading-none transition-transform duration-300 group-open:rotate-45">+</span>
                   </span>
                 </summary>
+                {c.items.length === 0 && (
+                  <p className="pb-5 text-sm text-pearl/55">
+                    {status === "loading" && "Wczytuję miejsca w okolicy…"}
+                    {status === "ok" && "Brak takich miejsc w najbliższej okolicy."}
+                    {status === "error" && (
+                      <>
+                        Nie udało się wczytać miejsc.{" "}
+                        <button type="button" onClick={() => setAttempt((n) => n + 1)} className="text-gold-300 underline underline-offset-4">
+                          Spróbuj ponownie
+                        </button>
+                      </>
+                    )}
+                  </p>
+                )}
                 <ul className="space-y-2.5 pb-5">
                   {c.items.map((p, i) => (
                     <li key={i}>
@@ -245,7 +267,16 @@ export default function LocationMap({
     <div className="relative isolate mx-auto grid max-w-[96rem] overflow-hidden rounded-[2rem] bg-plum-900 text-pearl md:rounded-[2.5rem] lg:grid-cols-[0.8fr_1.2fr]">
       <div className="flex flex-col gap-10 p-8 md:p-14">
         {rest.children}
-        <p className="text-sm text-pearl/55">{failed ? "Nie udało się teraz wczytać mapy okolicy. Odśwież stronę za chwilę." : "Wczytuję mapę okolicy…"}</p>
+        {rest.details && (
+        <div className="border-t border-pearl/15">
+          {CATEGORY_TABS.map((t) => (
+            <div key={t.key} className="flex items-center justify-between gap-6 border-b border-pearl/15 py-4">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em]">{t.label}</span>
+              <span className="text-xs uppercase tracking-[0.18em] text-pearl/40">{failed ? "Brak adresu" : "Wczytuję…"}</span>
+            </div>
+          ))}
+        </div>
+        )}
       </div>
       <div className="relative min-h-[22rem] bg-mist lg:min-h-[38rem]" />
     </div>
