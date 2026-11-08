@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Wordmark from "./Wordmark";
 import { pickTopic } from "@/lib/contactTopics";
@@ -22,9 +22,8 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  // pozycja, której kropka właśnie odjeżdża w prawo (strona otwiera się po jej zniknięciu)
-  const [leaving, setLeaving] = useState<number | null>(null);
+  // wybór pozycji zamyka menu od razu, bez zwijania okręgu: po prostu otwiera się strona
+  const [instant, setInstant] = useState(false);
   const burger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
 
@@ -35,24 +34,13 @@ export default function Nav() {
       panel.current.style.setProperty("--mx", `${b.left + b.width / 2}px`);
       panel.current.style.setProperty("--my", `${b.top + b.height / 2}px`);
     }
+    setInstant(false);
     setOpen((v) => !v);
   };
 
-  useEffect(() => {
-    if (!open) setLeaving(null);
-  }, [open]);
-
-  const go = (e: React.MouseEvent<HTMLAnchorElement>, i: number, href: string) => {
-    // przewijanie do kontaktu na tej samej stronie obsługuje już handler wyżej
-    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return setOpen(false);
-    e.preventDefault();
-    if (leaving !== null) return;
-    setLeaving(i);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setTimeout(() => {
-      router.push(href);
-      setOpen(false);
-    }, reduce ? 0 : 600);
+  const pick = () => {
+    setInstant(true);
+    setOpen(false);
   };
 
   // Otwarte menu: strona pod spodem stoi, Escape zamyka
@@ -171,17 +159,18 @@ export default function Nav() {
         id="menu"
         ref={panel}
         data-open={open || undefined}
+        data-instant={instant || undefined}
         inert={!open}
         className="menu-panel fixed inset-0 overflow-x-hidden overflow-y-auto bg-plum-900 text-pearl lg:hidden"
       >
         <div className="flex min-h-full flex-col px-6 pb-8 pt-[6.5rem] sm:px-10">
           <ul className="flex flex-col">
             {links.map((l, i) => (
-              <li key={l.href} data-leaving={leaving === i || undefined} className="menu-item border-b border-pearl/10" style={{ "--i": i } as CSSProperties}>
+              <li key={l.href} className="menu-item border-b border-pearl/10" style={{ "--i": i } as CSSProperties}>
                 <Link
                   href={l.href}
                   data-topic={l.topic}
-                  onClick={(e) => go(e, i, l.href)}
+                  onClick={pick}
                   className="group flex items-baseline gap-4 overflow-x-visible overflow-y-clip py-3.5 sm:py-4"
                 >
                   <span className="w-6 shrink-0 text-[0.7rem] font-light tabular-nums tracking-[0.2em] text-gold-400">
@@ -190,7 +179,7 @@ export default function Nav() {
                   <span className="menu-label font-display text-[clamp(2.4rem,11vw,4rem)] leading-[1.05] transition-colors group-hover:text-gold-300">
                     {l.label}
                   </span>
-                  {/* kropka marki: pojawia się przy wskazaniu, po kliknięciu odjeżdża w prawo za ekran i wtedy otwiera się strona */}
+                  {/* kropka marki pojawia się przy wskazaniu lub dotknięciu */}
                   <span aria-hidden className="-ml-4 flex-1 pr-1 text-[clamp(2.4rem,11vw,4rem)] leading-[1.05]">
                     <i className="menu-dot" />
                   </span>

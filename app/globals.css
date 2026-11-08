@@ -340,7 +340,7 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 [data-menu-open] .menu-burger span { top: calc(50% - 1px); left: 0.875rem; transition: top 0.25s cubic-bezier(0.6, 0, 0.4, 1), left 0.25s, transform 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.25s; }
 [data-menu-open] .menu-burger span:first-child { transform: rotate(45deg); }
 [data-menu-open] .menu-burger span:last-child { transform: rotate(-45deg); }
-/* kropka marki za pozycją menu: pojawia się przy wskazaniu, a po kliknięciu odjeżdża w prawo za ekran */
+/* kropka marki za pozycją menu: pojawia się przy wskazaniu, po kliknięciu od razu otwiera się strona */
 .menu-dot {
   display: inline-block; vertical-align: baseline; margin-left: 0.04em;
   width: 0.15em; height: 0.15em; background: var(--color-gold-500);
@@ -351,8 +351,5 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
   opacity: 1; scale: 1;
   transition: opacity 0.2s, scale 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
-/* po kliknięciu kropka (jeśli jeszcze jej nie było, pojawia się) odjeżdża w prawo za ekran */
-.menu-item[data-leaving] a .menu-dot {
-  opacity: 1; scale: 1; translate: 100vw 0;
-  transition: opacity 0.15s, scale 0.2s, translate 0.5s cubic-bezier(0.6, 0, 0.9, 0.4) 0.1s;
-}
+/* wybór pozycji: menu znika od razu, bez zwijania okręgu */
+.menu-panel[data-instant], .menu-panel[data-instant] * { transition: none !important; }
