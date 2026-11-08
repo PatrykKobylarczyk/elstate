@@ -74,7 +74,7 @@ export const contact = {
   phoneHref: "tel:+48518184244",
   email: "info@elstate.pl",
   careers: "kariera@elstate.pl",
-  instagram: "https://www.instagram.com/patrykkobylarczyk/",
+  instagram: "https://www.instagram.com/elstatenieruchomosci/",
   city: "Łódź",
 };
 
