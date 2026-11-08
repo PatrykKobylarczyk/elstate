@@ -227,26 +227,48 @@ html:not(.motion-ready) [data-hscroll] [data-track] {
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
-/* ---------- Ekran startowy (components/Intro.tsx) ---------- */
+/* ---------- Ekran startowy (components/Intro.tsx), wzorowany na czołówce N75 ---------- */
 html.intro { overflow: hidden; }
-html.intro .intro-screen {
-  display: flex;
-  animation: intro-out 1s cubic-bezier(0.76, 0, 0.24, 1) 2.7s forwards;
+html.intro .intro-screen { display: grid; }
+/* okrąg z ogromnym „cieniem” w kolorze tła: rosnący otwór odsłania stronę */
+.intro-iris {
+  position: absolute; left: 50%; top: 50%; width: 0; height: 0; border-radius: 50%; transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 200vmax var(--color-pearl); outline: 0 solid rgb(193 154 91 / 0.55);
+  transition: width 1.2s cubic-bezier(0.7, 0, 0.2, 1), height 1.2s cubic-bezier(0.7, 0, 0.2, 1), outline-color 0.6s 0.8s;
 }
-.intro-content { animation: intro-hide 0.5s cubic-bezier(0.12, 1, 0.2, 1) 2.3s forwards; }
-.intro-logo { animation: intro-fade 0.7s cubic-bezier(0.12, 1, 0.2, 1) 0.1s both; }
-/* kropka na końcu, jak kropka nad i, gdy „nieruchomości” już stoi */
-.intro-dot { animation: intro-up 1s cubic-bezier(0.12, 1, 0.2, 1) 1.25s both; }
-.intro-char { animation: intro-up 2.5s cubic-bezier(0.12, 1, 0.2, 1) both; }
-/* hero czeka, aż kurtyna zjedzie */
-html.intro .animate-rise, html.intro .skyline { animation-play-state: paused; }
-@keyframes intro-fade { from { opacity: 0; } }
-@keyframes intro-up { from { opacity: 0; transform: translateY(100%); } }
+/* złota obwódka pojawia się dopiero przy otwieraniu, wcześniej byłaby punktem na środku ekranu */
+html.intro-open .intro-iris { width: 260vmax; height: 260vmax; outline-width: 1px; outline-color: rgb(193 154 91 / 0); }
+.intro-content { transition: opacity 0.5s, transform 1.2s cubic-bezier(0.7, 0, 0.2, 1); }
+html.intro-open .intro-content { opacity: 0; transform: scale(1.35); }
+html.intro-skip .intro-screen { opacity: 0; transition: opacity 0.4s; }
+.intro-logo { width: min(68vw, 360px); height: auto; overflow: visible; }
+/* 1. kontur liter rysowany złotą kreską */
+.intro-stroke path {
+  stroke: var(--color-gold-500); stroke-width: 26; stroke-linejoin: round;
+  stroke-dasharray: 1 1; stroke-dashoffset: 1;
+  animation: intro-draw 1.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+/* po wypełnieniu kreska znika, żeby nie zostawiać szwów na obrysie */
+.intro-stroke { animation: intro-hide 0.4s ease 2s forwards; }
+/* 2. wypełnienie */
+.intro-fill { fill: var(--color-gold-500); opacity: 0; animation: intro-show 0.55s ease 1.6s forwards; }
+/* 4. kropka rysuje się fioletową kreską, potem się wypełnia */
+.intro-dot {
+  fill: var(--color-plum-900); fill-opacity: 0; stroke: var(--color-plum-900); stroke-width: 26; stroke-dasharray: 1 1; stroke-dashoffset: 1;
+  animation: intro-draw 0.8s cubic-bezier(0.45, 0, 0.2, 1) 2.3s forwards, intro-dot-fill 0.35s ease 3s forwards;
+}
+/* 3. „nieruchomości” litera po literze */
+.intro-char { animation: intro-up 1.2s cubic-bezier(0.12, 1, 0.2, 1) both; }
+.intro-skip-hint { opacity: 0; animation: intro-hint 0.6s 1s forwards; }
+html.intro-open .intro-skip-hint { opacity: 0 !important; animation: none; }
+/* hero czeka, aż okrąg zacznie się otwierać */
+html.intro:not(.intro-open) :is(.animate-rise, .skyline) { animation-play-state: paused; }
+@keyframes intro-draw { to { stroke-dashoffset: 0; } }
+@keyframes intro-show { to { opacity: 1; } }
 @keyframes intro-hide { to { opacity: 0; } }
-/* kurtyna odjeżdża do góry, a strona wjeżdża od dołu razem z nią */
-@keyframes intro-out { to { transform: translateY(-100%); } }
-html.intro body > :is(header, main, footer) { animation: intro-page 1s cubic-bezier(0.76, 0, 0.24, 1) 2.7s backwards; }
-@keyframes intro-page { from { transform: translateY(35vh); } }
+@keyframes intro-dot-fill { to { fill-opacity: 1; } }
+@keyframes intro-up { from { opacity: 0; transform: translateY(100%); } }
+@keyframes intro-hint { to { opacity: 0.8; } }
 
 /* lista ofert: przygaszone wyniki, dopóki filtry się przeliczają */
 body:has(form[data-pending]) [data-results] { opacity: 0.45; }
