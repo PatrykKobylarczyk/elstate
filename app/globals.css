@@ -248,10 +248,12 @@ html.intro-skip .intro-screen { opacity: 0; transition: opacity 0.4s; }
   stroke-dasharray: 1 1; stroke-dashoffset: 1;
   animation: intro-draw 1.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
 }
-/* po wypełnieniu kreska znika, żeby nie zostawiać szwów na obrysie */
-.intro-stroke { animation: intro-hide 0.4s ease 2s forwards; }
+/* pod wypełnieniem kreska znika, żeby nie zostawiać szwów na obrysie */
+.intro-stroke { animation: intro-hide 0.4s ease 2.2s forwards; }
 /* 2. wypełnienie */
-.intro-fill { fill: var(--color-gold-500); opacity: 0; animation: intro-show 0.55s ease 1.6s forwards; }
+.intro-fill {
+  /* wypełnienie z obrysem tej samej grubości co kontur: napis nie chudnie po wypełnieniu */
+  fill: var(--color-gold-500); stroke: var(--color-gold-500); stroke-width: 26; stroke-linejoin: round; opacity: 0; animation: intro-show 0.55s ease 1.6s forwards; }
 /* 4. kropka rysuje się fioletową kreską, potem się wypełnia */
 .intro-dot {
   fill: var(--color-plum-900); fill-opacity: 0; stroke: var(--color-plum-900); stroke-width: 26; stroke-dasharray: 1 1; stroke-dashoffset: 1;
