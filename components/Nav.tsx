@@ -169,11 +169,10 @@ export default function Nav() {
                   </span>
                   <span className="menu-label font-display text-[clamp(2.4rem,11vw,4rem)] leading-[1.05] transition-colors group-hover:text-gold-300">
                     {l.label}
-                    <span className="menu-dot text-gold-500">.</span>
                   </span>
-                  {/* złota kreska za pozycją: wydłuża się przy wskazaniu i dotknięciu */}
-                  <span aria-hidden className="ml-1 flex-1 self-center pr-1">
-                    <i className="menu-line block h-px bg-gold-500" />
+                  {/* kropka marki: przy wskazaniu lub dotknięciu pojawia się, potem rozciąga w linię w prawo */}
+                  <span aria-hidden className="-ml-4 flex-1 pr-1 text-[clamp(2.4rem,11vw,4rem)] leading-[1.05]">
+                    <i className="menu-dot" />
                   </span>
                 </Link>
               </li>

@@ -326,9 +326,6 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
   transition-delay: calc(0.3s + var(--i) * 0.06s);
 }
 .menu-panel[data-open] .menu-item > a > span:first-child { transition-delay: calc(0.4s + var(--i) * 0.06s); }
-/* kropka marki pojawia się przy wskazaniu pozycji */
-.menu-dot { display: inline-block; opacity: 0; transform: scale(0); transition: opacity 0.3s, transform 0.4s cubic-bezier(0.2, 1.4, 0.4, 1); }
-.menu-item a:hover .menu-dot, .menu-item a:focus-visible .menu-dot { opacity: 1; transform: none; }
 .menu-foot { opacity: 0; transform: translateY(16px); transition: opacity 0.2s, transform 0.3s; }
 .menu-panel[data-open] .menu-foot { opacity: 1; transform: none; transition: opacity 0.6s 0.75s, transform 0.9s cubic-bezier(0.12, 1, 0.2, 1) 0.75s; }
 
@@ -343,6 +340,14 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 [data-menu-open] .menu-burger span { top: calc(50% - 1px); left: 0.875rem; transition: top 0.25s cubic-bezier(0.6, 0, 0.4, 1), left 0.25s, transform 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.25s; }
 [data-menu-open] .menu-burger span:first-child { transform: rotate(45deg); }
 [data-menu-open] .menu-burger span:last-child { transform: rotate(-45deg); }
-/* złota kreska za pozycją menu: krótka, przy wskazaniu lub dotknięciu wydłuża się do prawej krawędzi */
-.menu-line { width: 1.75rem; opacity: 0.7; transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
-.menu-item a:is(:hover, :focus-visible, :active) .menu-line { width: 100%; opacity: 1; }
+/* kropka marki za pozycją menu: przy wskazaniu lub dotknięciu pojawia się, a potem rozciąga w cienką linię w prawo */
+.menu-dot {
+  display: inline-block; vertical-align: baseline; margin-left: 0.04em;
+  width: 0.15em; height: 0.15em; background: var(--color-gold-500);
+  opacity: 0; transform: scale(0); transform-origin: left bottom;
+  transition: width 0.4s cubic-bezier(0.7, 0, 0.2, 1), height 0.3s, opacity 0.3s 0.3s, transform 0.3s 0.3s;
+}
+.menu-item a:is(:hover, :focus-visible, :active) .menu-dot {
+  opacity: 1; transform: none; width: calc(100% - 0.04em); height: 2px;
+  transition: opacity 0.2s, transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1), width 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.35s, height 0.4s cubic-bezier(0.65, 0, 0.35, 1) 0.35s;
+}
