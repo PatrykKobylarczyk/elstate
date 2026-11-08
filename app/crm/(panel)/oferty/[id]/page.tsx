@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import Notes from "@/components/crm/Notes";
+import { ConfirmButton } from "@/components/crm/forms";
 import LocationMap from "@/components/offer/LocationMap";
-import { Badge, PageHead, btnGhost, card, listingTone, pln, when } from "@/components/crm/ui";
+import { Badge, PageHead, btnDanger, btnGhost, card, listingTone, pln, when } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { categoriesCrm, clientKinds, deals, label, listingStatuses } from "@/lib/crm/labels";
 import { clients, listings, users } from "@/lib/crm/schema";
+import { deleteListing } from "../../actions";
 
 export const metadata: Metadata = { title: "Oferta" };
 
@@ -132,6 +134,10 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
             </dl>
           </section>
           <Notes listingId={l.id} />
+          <form action={deleteListing}>
+            <input type="hidden" name="id" value={l.id} />
+            <ConfirmButton className={btnDanger} message="Usunąć ofertę razem ze zdjęciami? Tego nie da się cofnąć. (Zamiast tego możesz dać status „Archiwum”.)">Usuń ofertę</ConfirmButton>
+          </form>
         </div>
       </div>
 
