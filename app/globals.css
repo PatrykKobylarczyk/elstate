@@ -303,3 +303,53 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 @keyframes poi-in { from { transform: scale(0); } }
 .leaflet-tooltip.poi-tip { font-family: inherit; font-size: 12px; line-height: 1.35; color: var(--color-graphite); background: var(--color-pearl); border: 1px solid rgba(42, 42, 45, 0.15); border-radius: 0.5rem; box-shadow: 0 4px 16px rgba(42, 42, 45, 0.15); padding: 6px 9px; }
 .leaflet-tooltip.poi-tip b { font-weight: 600; }
+
+/* ---------- Menu na telefonie (components/Nav.tsx) ---------- */
+/* fioletowy okrąg rośnie od przycisku menu, jak otwór w czołówce; zamknięte menu zostaje w HTML, tylko schowane */
+.menu-panel {
+  clip-path: circle(0 at var(--mx, calc(100% - 3rem)) var(--my, 3rem));
+  visibility: hidden;
+  transition: clip-path 0.6s cubic-bezier(0.7, 0, 0.2, 1) 0.15s, visibility 0s 0.75s;
+}
+.menu-panel[data-open] {
+  clip-path: circle(150vmax at var(--mx, calc(100% - 3rem)) var(--my, 3rem));
+  visibility: visible;
+  transition: clip-path 0.8s cubic-bezier(0.7, 0, 0.2, 1), visibility 0s;
+}
+/* pozycje wjeżdżają od dołu jedna po drugiej, numer i złota kreska za nimi */
+.menu-item { border-color: rgb(249 245 239 / 0); transition: border-color 0.4s; }
+.menu-item > a > span { transform: translateY(110%); opacity: 0; transition: transform 0.35s cubic-bezier(0.7, 0, 0.8, 0.4), opacity 0.25s; }
+.menu-panel[data-open] .menu-item { border-color: rgb(249 245 239 / 0.1); transition-delay: calc(0.45s + var(--i) * 0.06s); }
+.menu-panel[data-open] .menu-item > a > span {
+  transform: none; opacity: 1;
+  transition: transform 0.9s cubic-bezier(0.12, 1, 0.2, 1), opacity 0.5s;
+  transition-delay: calc(0.3s + var(--i) * 0.06s);
+}
+.menu-panel[data-open] .menu-item > a > span:first-child { transition-delay: calc(0.4s + var(--i) * 0.06s); }
+.menu-foot { opacity: 0; transform: translateY(16px); transition: opacity 0.2s, transform 0.3s; }
+.menu-panel[data-open] .menu-foot { opacity: 1; transform: none; transition: opacity 0.6s 0.75s, transform 0.9s cubic-bezier(0.12, 1, 0.2, 1) 0.75s; }
+
+/* przycisk: dwie kreski schodzą do środka, potem obracają się w krzyżyk */
+.menu-burger span {
+  position: absolute; left: 0.875rem; right: 0.875rem; height: 2px; border-radius: 2px; background: currentColor;
+  transition: top 0.25s cubic-bezier(0.6, 0, 0.4, 1) 0.25s, transform 0.25s cubic-bezier(0.6, 0, 0.4, 1);
+}
+.menu-burger span:first-child { top: calc(42% - 1px); }
+.menu-burger span:last-child { top: calc(58% - 1px); left: 1.25rem; }
+.menu-burger:hover span:last-child { left: 0.875rem; }
+[data-menu-open] .menu-burger span { top: calc(50% - 1px); left: 0.875rem; transition: top 0.25s cubic-bezier(0.6, 0, 0.4, 1), left 0.25s, transform 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.25s; }
+[data-menu-open] .menu-burger span:first-child { transform: rotate(45deg); }
+[data-menu-open] .menu-burger span:last-child { transform: rotate(-45deg); }
+/* kropka marki za pozycją menu: pojawia się przy wskazaniu, po kliknięciu od razu otwiera się strona */
+.menu-dot {
+  display: inline-block; vertical-align: baseline; margin-left: 0.04em;
+  width: 0.15em; height: 0.15em; background: var(--color-gold-500);
+  opacity: 0; scale: 0;
+  transition: opacity 0.25s, scale 0.3s;
+}
+.menu-item a:is(:hover, :focus-visible, :active) .menu-dot {
+  opacity: 1; scale: 1;
+  transition: opacity 0.2s, scale 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+/* wybór pozycji: menu znika od razu, bez zwijania okręgu */
+.menu-panel[data-instant], .menu-panel[data-instant] * { transition: none !important; }
