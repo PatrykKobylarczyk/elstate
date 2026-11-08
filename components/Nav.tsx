@@ -171,6 +171,10 @@ export default function Nav() {
                     {l.label}
                     <span className="menu-dot text-gold-500">.</span>
                   </span>
+                  {/* złota kreska za pozycją: wydłuża się przy wskazaniu i dotknięciu */}
+                  <span aria-hidden className="ml-1 flex-1 self-center pr-1">
+                    <i className="menu-line block h-px bg-gold-500" />
+                  </span>
                 </Link>
               </li>
             ))}

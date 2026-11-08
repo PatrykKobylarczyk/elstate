@@ -343,3 +343,6 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 [data-menu-open] .menu-burger span { top: calc(50% - 1px); left: 0.875rem; transition: top 0.25s cubic-bezier(0.6, 0, 0.4, 1), left 0.25s, transform 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.25s; }
 [data-menu-open] .menu-burger span:first-child { transform: rotate(45deg); }
 [data-menu-open] .menu-burger span:last-child { transform: rotate(-45deg); }
+/* złota kreska za pozycją menu: krótka, przy wskazaniu lub dotknięciu wydłuża się do prawej krawędzi */
+.menu-line { width: 1.75rem; opacity: 0.7; transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+.menu-item a:is(:hover, :focus-visible, :active) .menu-line { width: 100%; opacity: 1; }
