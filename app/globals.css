@@ -252,11 +252,9 @@ html.intro-skip .intro-screen { opacity: 0; transition: opacity 0.4s; }
 .intro-stroke { animation: intro-hide 0.4s ease 2s forwards; }
 /* 2. wypełnienie */
 .intro-fill { fill: var(--color-gold-500); opacity: 0; animation: intro-show 0.55s ease 1.6s forwards; }
-/* 4. kropka wjeżdża od dołu, jak kropka nad i, gdy „nieruchomości” już stoi */
-.intro-dot { fill: var(--color-plum-900); transform: translateY(300px); animation: intro-dot-in 0.8s cubic-bezier(0.12, 1, 0.2, 1) 2.3s forwards; }
-/* wariant ?intro=kontur: kropka też rysuje się kreską, potem wypełnia */
-html.intro-dot-outline .intro-dot {
-  transform: none; fill-opacity: 0; stroke: var(--color-plum-900); stroke-width: 22; stroke-dasharray: 1 1; stroke-dashoffset: 1;
+/* 4. kropka rysuje się fioletową kreską, potem się wypełnia */
+.intro-dot {
+  fill: var(--color-plum-900); fill-opacity: 0; stroke: var(--color-plum-900); stroke-width: 26; stroke-dasharray: 1 1; stroke-dashoffset: 1;
   animation: intro-draw 0.8s cubic-bezier(0.45, 0, 0.2, 1) 2.3s forwards, intro-dot-fill 0.35s ease 3s forwards;
 }
 /* 3. „nieruchomości” litera po literze */
@@ -268,7 +266,6 @@ html.intro:not(.intro-open) :is(.animate-rise, .skyline) { animation-play-state:
 @keyframes intro-draw { to { stroke-dashoffset: 0; } }
 @keyframes intro-show { to { opacity: 1; } }
 @keyframes intro-hide { to { opacity: 0; } }
-@keyframes intro-dot-in { to { transform: none; } }
 @keyframes intro-dot-fill { to { fill-opacity: 1; } }
 @keyframes intro-up { from { opacity: 0; transform: translateY(100%); } }
 @keyframes intro-hint { to { opacity: 0.8; } }
