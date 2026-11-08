@@ -29,9 +29,10 @@ export async function GET(req: NextRequest) {
   const d = await db();
   const [row] = slug ? await d.select({ id: listings.id, nearby: listings.nearby }).from(listings).where(eq(listings.slug, slug)) : [];
   if (hasPlaces(row?.nearby)) return NextResponse.json({ crm: true, categories: row.nearby }, { headers: noStore });
-  const categories = await fetchNearby({ lat, lng }, 20000, { headers: { "User-Agent": "elstate.pl (info@elstate.pl)" } });
+  const errors: string[] = [];
+  const categories = await fetchNearby({ lat, lng }, 20000, { headers: { "User-Agent": "elstate.pl (info@elstate.pl)" } }, errors);
   if (row && hasPlaces(categories)) await d.update(listings).set({ nearby: categories }).where(eq(listings.id, row.id));
-  return NextResponse.json({ crm: true, categories: categories ?? [] }, { headers: noStore });
+  return NextResponse.json({ crm: true, categories: categories ?? [], errors }, { headers: noStore });
 }
 
 const Body = z.object({
