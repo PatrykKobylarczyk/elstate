@@ -26,6 +26,7 @@ export function toPublic(r: ListingRow, agentEmail?: string | null): Listing {
     images: r.images,
     featured: r.featured,
     description: r.description ?? undefined,
+    descriptionSections: r.descriptionSections ?? undefined,
     features: r.features,
     street: r.street ?? undefined,
     floorsTotal: r.floorsTotal ?? undefined,

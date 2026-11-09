@@ -11,6 +11,7 @@ import { ingestNbot } from "@/lib/crm/leads";
 import { clients, leads, listings, notes, sessions, users } from "@/lib/crm/schema";
 import { removeImage, saveImage } from "@/lib/crm/storage";
 import { storeArea } from "@/lib/crm/area";
+import { sectionsFromForm } from "@/lib/description";
 
 type State = { error?: string; ok?: string } | undefined;
 
@@ -98,6 +99,7 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
     floorsTotal: int(f, "floorsTotal"),
     year: int(f, "year"),
     description: opt(f, "description"),
+    descriptionSections: sectionsFromForm((n) => str(f, n)),
     features: str(f, "features").split(/[\n,]/).map((x) => x.trim()).filter(Boolean).slice(0, 30),
     images,
     featured: f.get("featured") === "on",
@@ -403,6 +405,7 @@ export async function importStarterListings() {
       floorsTotal: s.floorsTotal ?? null,
       street: s.street ?? null,
       description: s.description ?? null,
+      descriptionSections: s.descriptionSections ?? null,
       features: s.features ?? [],
       images: s.images?.length ? s.images : s.image ? [s.image] : [],
       featured: Boolean(s.featured),
