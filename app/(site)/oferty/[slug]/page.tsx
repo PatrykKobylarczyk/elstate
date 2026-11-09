@@ -202,10 +202,10 @@ export default async function Oferta({ params }: Props) {
                 {paragraphs.slice(1).map((p, i) => (
                   <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[0.95rem]">{p}</p>
                 ))}
-                {blocks.map((b, i) => (
-                  <div key={b.label} className={i === 0 && paragraphs.length === 0 ? "" : "pt-5"}>
-                    <h3 className="eyebrow text-plum-900">{b.label}</h3>
-                    <div className="mt-4 space-y-4">
+                {blocks.map((b) => (
+                  <div key={b.label}>
+                    <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-plum-900">{b.label}</h3>
+                    <div className="mt-1.5 space-y-3">
                       {b.paragraphs.map((p, j) => (
                         <p key={j} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[0.95rem]">{p}</p>
                       ))}
