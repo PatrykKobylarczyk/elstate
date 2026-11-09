@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { categoriesCrm, clientKinds, deals, label, listingStatuses } from "@/lib/crm/labels";
 import { clients, listings, users } from "@/lib/crm/schema";
+import { describe } from "@/lib/description";
 import { deleteListing } from "../../actions";
 
 export const metadata: Metadata = { title: "Oferta" };
@@ -24,6 +25,7 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
   const [row] = await d.select({ l: listings, agent: users.name, agentEmail: users.email }).from(listings).leftJoin(users, eq(users.id, listings.agentId)).where(eq(listings.id, id));
   if (!row) notFound();
   const { l } = row;
+  const text = describe(l.description, l.descriptionSections);
   const [owner] = l.ownerId ? await d.select().from(clients).where(eq(clients.id, l.ownerId)) : [];
 
   // mapa i okolica wczytują się w przeglądarce, żeby karta otwierała się od razu, nawet gdy serwery map są wolne
@@ -86,10 +88,16 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
               ))}
             </dl>
           </section>
-          {(l.description || l.features.length > 0) && (
+          {(text.intro.length > 0 || text.blocks.length > 0 || l.features.length > 0) && (
             <section className={card}>
               <h2 className="mb-3 font-display text-xl text-plum-900">Opis</h2>
-              {l.description && <p className="whitespace-pre-line text-sm leading-relaxed text-graphite/80">{l.description}</p>}
+              {text.intro.length > 0 && <p className="whitespace-pre-line text-sm leading-relaxed text-graphite/80">{text.intro.join("\n\n")}</p>}
+              {text.blocks.map((b) => (
+                <div key={b.label} className="mt-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-plum-900">{b.label}</h3>
+                  <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-graphite/80">{b.paragraphs.join("\n\n")}</p>
+                </div>
+              ))}
               {l.features.length > 0 && (
                 <ul className="mt-4 flex flex-wrap gap-2">
                   {l.features.map((f) => <li key={f}><Badge tone="gold">{f}</Badge></li>)}

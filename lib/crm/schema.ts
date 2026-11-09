@@ -1,6 +1,7 @@
 // Schemat bazy CRM (Postgres, Drizzle). Zmiany: edytuj ten plik i uruchom `npm run db:generate`,
 // migracje w drizzle/ wykonują się same przy buildzie (scripts/migrate.mjs).
 import type { NearbyCategory } from "../nearby-core";
+import type { DescriptionSections } from "../description";
 import { sql } from "drizzle-orm";
 import { boolean, doublePrecision, index, integer, jsonb, pgTable, real, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
@@ -78,6 +79,8 @@ export const listings = pgTable(
     floorsTotal: integer("floors_total"),
     year: integer("year"),
     description: text("description"),
+    // opis w sekcjach (Lokalizacja, Budynek…), klucze z lib/description.ts; `description` to wstęp
+    descriptionSections: jsonb("description_sections").$type<DescriptionSections>(),
     features: jsonb("features").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     images: jsonb("images").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     lat: doublePrecision("lat"),

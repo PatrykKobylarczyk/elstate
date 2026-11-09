@@ -12,6 +12,7 @@ import ShareButton from "@/components/offer/ShareButton";
 import LocationMap from "@/components/offer/LocationMap";
 import Expandable from "@/components/offer/Expandable";
 import StickyBar from "@/components/offer/StickyBar";
+import { describe } from "@/lib/description";
 import { geocode } from "@/lib/geocode";
 import { getListing, getListings } from "@/lib/listings";
 import { contact, floorLabel, formatArea, formatPrice, pricePerM2, roomsLabel, team } from "@/lib/data";
@@ -52,7 +53,8 @@ export default async function Oferta({ params }: Props) {
   const deal = l.deal === "sprzedaz" ? "Sprzedaż" : "Wynajem";
   // na razie przy każdej ofercie kontakt do Maxa (pierwsza osoba w zespole)
   const agent = team[0];
-  const paragraphs = l.description?.split(/\n{2,}/).filter(Boolean) ?? [];
+  // wstęp + sekcje z nagłówkami (Lokalizacja, Budynek…); stare opisy z nagłówkami w tekście rozkładają się tak samo
+  const { intro: paragraphs, blocks } = describe(l.description, l.descriptionSections);
   const place = [l.street, l.district, l.city].filter(Boolean).join(", ");
   // mapa: współrzędne z geokodowania (pewne), a gdy się nie uda, zapytanie tekstowe z „Polska”
   const spot = await geocode({ street: l.street, district: l.district, city: l.city });
@@ -191,12 +193,24 @@ export default async function Oferta({ params }: Props) {
             </dl>
           </div>
           <div id="opis" className="max-w-2xl lg:pt-2">
-            {paragraphs.length > 0 ? (
+            {paragraphs.length > 0 || blocks.length > 0 ? (
               <Expandable alignWith="fakty" column="opis">
               <div className="space-y-5">
-                <p data-words className="font-display text-[clamp(1.15rem,1.45vw,1.45rem)] leading-[1.35]">{paragraphs[0]}</p>
+                {paragraphs.length > 0 && (
+                  <p data-words className="font-display text-[clamp(1.15rem,1.45vw,1.45rem)] leading-[1.35]">{paragraphs[0]}</p>
+                )}
                 {paragraphs.slice(1).map((p, i) => (
                   <p key={i} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[0.95rem]">{p}</p>
+                ))}
+                {blocks.map((b, i) => (
+                  <div key={b.label} className={i === 0 && paragraphs.length === 0 ? "" : "pt-5"}>
+                    <h3 className="eyebrow text-plum-900">{b.label}</h3>
+                    <div className="mt-4 space-y-4">
+                      {b.paragraphs.map((p, j) => (
+                        <p key={j} className="whitespace-pre-line leading-relaxed text-graphite/75 md:text-[0.95rem]">{p}</p>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
               </Expandable>

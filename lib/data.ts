@@ -1,4 +1,5 @@
 // Treści przeniesione z dotychczasowej strony elstate.pl.
+import type { DescriptionSections } from "./description";
 
 export type Category = "mieszkania" | "domy" | "dzialki" | "lokale";
 export type Deal = "sprzedaz" | "wynajem";
@@ -19,7 +20,8 @@ export type Listing = {
   featured?: boolean;
   // pola uzupełniane z CRM (lib/listings.ts)
   images?: string[];
-  description?: string;
+  description?: string; // wstęp opisu
+  descriptionSections?: DescriptionSections; // Lokalizacja, Budynek… (lib/description.ts)
   features?: string[];
   street?: string;
   floorsTotal?: number;

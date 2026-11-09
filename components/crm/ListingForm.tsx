@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { saveListing } from "@/app/crm/(panel)/actions";
 import { categoriesCrm, deals, listingStatuses } from "@/lib/crm/labels";
+import { DESCRIPTION_SECTIONS, formDescription } from "@/lib/description";
 import type { ListingRow } from "@/lib/crm/schema";
 import { ActionForm, Submit } from "./forms";
 import PhotoManager from "./PhotoManager";
@@ -9,6 +10,8 @@ import { Field, card, input } from "./ui";
 type Opt = { id: number; name: string };
 
 export default function ListingForm({ l, clients, team, me }: { l?: ListingRow; clients: Opt[]; team: Opt[]; me: number }) {
+  // stara oferta z nagłówkami wpisanymi w opisie („Lokalizacja:”…) od razu rozkłada się na pola
+  const desc = formDescription(l?.description, l?.descriptionSections);
   return (
     <ActionForm action={saveListing} toast className="grid gap-6">
       {l && <input type="hidden" name="id" value={l.id} />}
@@ -70,9 +73,20 @@ export default function ListingForm({ l, clients, team, me }: { l?: ListingRow; 
       </section>
 
       <section className={`${card} grid gap-4`}>
-        <Field label="Opis" hint="Puste linie dzielą tekst na akapity.">
-          <textarea name="description" rows={9} defaultValue={l?.description ?? ""} className={input} />
+        <div>
+          <h2 className="font-display text-xl text-plum-900">Opis</h2>
+          <p className="mt-1 text-sm text-graphite/55">
+            Na stronie każde pole pojawi się pod swoim nagłówkiem. Puste pola są pomijane, puste linie dzielą tekst na akapity.
+          </p>
+        </div>
+        <Field label="Wstęp" hint="Pierwsze zdania o ofercie, bez nagłówka. Pierwszy akapit jest wyróżniony większą czcionką.">
+          <textarea name="description" rows={4} defaultValue={desc.intro} className={input} />
         </Field>
+        {DESCRIPTION_SECTIONS.map((s) => (
+          <Field key={s.key} label={s.label} hint={s.hint}>
+            <textarea name={`section_${s.key}`} rows={4} defaultValue={desc.sections[s.key] ?? ""} className={input} />
+          </Field>
+        ))}
         <Field label="Atuty" hint="Każdy w nowej linii lub po przecinku, np. balkon, winda, komórka lokatorska.">
           <textarea name="features" rows={3} defaultValue={l?.features.join("\n")} className={input} />
         </Field>
