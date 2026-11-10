@@ -1,6 +1,7 @@
 import "server-only";
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { listings as staticListings, type Listing } from "./data";
+import { approxSpot } from "./approx";
 import { db, dbConfigured } from "./crm/db";
 import { listings as table, users, type ListingRow } from "./crm/schema";
 
@@ -29,6 +30,7 @@ export function toPublic(r: ListingRow, agentEmail?: string | null): Listing {
     descriptionSections: r.descriptionSections ?? undefined,
     features: r.features,
     street: r.street ?? undefined,
+    approx: r.lat != null && r.lng != null ? approxSpot({ lat: r.lat, lng: r.lng }, r.slug) : undefined,
     floorsTotal: r.floorsTotal ?? undefined,
     reserved: r.status === "rezerwacja",
     agentEmail: agentEmail ?? undefined,

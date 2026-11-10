@@ -13,6 +13,7 @@ import LocationMap from "@/components/offer/LocationMap";
 import Expandable from "@/components/offer/Expandable";
 import StickyBar from "@/components/offer/StickyBar";
 import { describe } from "@/lib/description";
+import { approxSpot } from "@/lib/approx";
 import { geocode } from "@/lib/geocode";
 import { getListing, getListings } from "@/lib/listings";
 import { contact, floorLabel, formatArea, formatPrice, pricePerM2, roomsLabel, team } from "@/lib/data";
@@ -55,10 +56,11 @@ export default async function Oferta({ params }: Props) {
   const agent = team[0];
   // wstęp + sekcje z nagłówkami (Lokalizacja, Budynek…); stare opisy z nagłówkami w tekście rozkładają się tak samo
   const { intro: paragraphs, blocks } = describe(l.description, l.descriptionSections);
-  const place = [l.street, l.district, l.city].filter(Boolean).join(", ");
-  // mapa: współrzędne z geokodowania (pewne), a gdy się nie uda, zapytanie tekstowe z „Polska”
-  const spot = await geocode({ street: l.street, district: l.district, city: l.city });
-  const mapQuery = spot ? `${spot.lat},${spot.lng}` : encodeURIComponent([l.street, l.district, l.city, "Polska"].filter(Boolean).join(", "));
+  // bez ulicy i numeru: na stronie tylko dzielnica i miasto, a pinezka w przybliżonym miejscu (lib/approx.ts)
+  const place = [l.district, l.city].filter(Boolean).join(", ");
+  const exact = l.approx ? null : await geocode({ street: l.street, district: l.district, city: l.city });
+  const spot = l.approx ?? (exact ? approxSpot(exact, l.slug) : null);
+  const mapQuery = spot ? `${spot.lat},${spot.lng}` : encodeURIComponent([l.district, l.city, "Polska"].filter(Boolean).join(", "));
   const similar = all
     .filter((x) => x.slug !== l.slug && x.deal === l.deal)
     .sort((a, b) => Number(b.district === l.district) - Number(a.district === l.district) || Math.abs(a.price - l.price) - Math.abs(b.price - l.price))
@@ -94,7 +96,7 @@ export default async function Oferta({ params }: Props) {
         </h2>
       </div>
       <div>
-        {l.street && <p className="text-lg text-pearl/80">{l.street}</p>}
+        <p className="text-lg text-pearl/80">Pinezka pokazuje przybliżoną okolicę. Dokładny adres podamy przy umawianiu prezentacji.</p>
         <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="btn-ghost mt-8 text-pearl">
           Otwórz w Mapach Google <Arrow />
         </a>
@@ -117,8 +119,9 @@ export default async function Oferta({ params }: Props) {
             </div>
           </div>
         )}
-        {/* blenda tylko na dolnej 1/3 zdjęcia (pod napisami) i wąski pas u góry pod menu */}
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(42,42,45,0.92),rgba(42,42,45,0.6)_14%,rgba(42,42,45,0)_33.3%),linear-gradient(to_bottom,rgba(42,42,45,0.35),rgba(42,42,45,0)_14%)]" />
+        {/* blenda pod napisami i wąski pas u góry pod menu; na telefonie tytuł i parametry zajmują większą część
+            ekranu, więc blenda jest czarna, ciemniejsza i sięga wyżej; od md tylko dolna 1/3 zdjęcia */}
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(0,0,0,0.95),rgba(0,0,0,0.85)_35%,rgba(0,0,0,0.6)_58%,rgba(0,0,0,0)_82%),linear-gradient(to_bottom,rgba(0,0,0,0.4),rgba(0,0,0,0)_14%)] md:bg-[linear-gradient(to_top,rgba(42,42,45,0.92),rgba(42,42,45,0.6)_14%,rgba(42,42,45,0)_33.3%),linear-gradient(to_bottom,rgba(42,42,45,0.35),rgba(42,42,45,0)_14%)]" />
 
         <div className="mx-auto mt-auto w-full max-w-[96rem] px-5 pb-8 pt-32 [text-shadow:0_2px_30px_rgba(42,42,45,0.5)] md:px-10 md:pb-12">
           <div className="flex animate-rise flex-wrap items-center gap-2">
@@ -252,15 +255,15 @@ export default async function Oferta({ params }: Props) {
         </div>
       </section>
 
-      {/* LOKALIZACJA: adres oferty na mapie; okolicę z odległościami widzą tylko zalogowani w CRM */}
+      {/* LOKALIZACJA: przybliżone położenie oferty na mapie (bez dokładnego adresu); okolicę z odległościami widzą tylko zalogowani w CRM */}
       <section className="bg-pearl px-3 pb-3 md:px-4 md:pb-4">
         <LocationMap
           home={spot}
-          queries={[[l.street, l.district, l.city], [l.street, l.city], [l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
-          pinLabel={l.street || l.district || l.city}
+          queries={[[l.district, l.city], [l.city]].map((q) => q.filter(Boolean).join(", ")).filter((q, i, all) => q && all.indexOf(q) === i)}
+          pinLabel={l.district || l.city}
           crmProbe
           slug={l.slug}
-          zoom={l.street ? 16 : 14}
+          zoom={15}
         >
           {locationHead}
         </LocationMap>
