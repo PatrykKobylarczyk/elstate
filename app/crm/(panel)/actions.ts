@@ -114,6 +114,18 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   if ((status === "aktywna" || status === "rezerwacja") && (!values.price || !values.area || !values.district)) {
     return { error: "Żeby opublikować ofertę, uzupełnij cenę, powierzchnię i dzielnicę." };
   }
+  if (str(f, "ownerId") === "nowy") {
+    const ownerName = str(f, "ownerName");
+    if (!ownerName) return { error: "Podaj imię i nazwisko nowego właściciela." };
+    const [owner] = await d
+      .insert(clients)
+      .values({ name: ownerName.slice(0, 200), phone: opt(f, "ownerPhone"), email: opt(f, "ownerEmail"), kind: "sprzedajacy" })
+      .returning({ id: clients.id });
+    values.ownerId = owner.id;
+    await log("client_saved", { userId: user.id, subject: String(owner.id), meta: { created: true, fromListing: true } });
+    // odśwież formularz, żeby nowy klient był już wybrany na liście (i nie zapisał się drugi raz)
+    revalidatePath("/crm", "layout");
+  }
   let oldSlug = "";
   let savedId = id;
   let fetchArea = true;

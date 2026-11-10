@@ -4,6 +4,7 @@ import { categoriesCrm, deals, listingStatuses } from "@/lib/crm/labels";
 import { DESCRIPTION_SECTIONS, formDescription } from "@/lib/description";
 import type { ListingRow } from "@/lib/crm/schema";
 import { ActionForm, Submit } from "./forms";
+import OwnerPicker from "./OwnerPicker";
 import PhotoManager from "./PhotoManager";
 import { Field, card, input } from "./ui";
 
@@ -99,12 +100,7 @@ export default function ListingForm({ l, clients, team, me }: { l?: ListingRow; 
         <h2 className="font-display text-xl text-plum-900 md:col-span-2">
           Dane wewnętrzne <span className="text-sm font-normal text-graphite/50">(nie trafiają na stronę)</span>
         </h2>
-        <Field label="Właściciel (klient)">
-          <select name="ownerId" defaultValue={l?.ownerId ?? ""} className={input}>
-            <option value="">—</option>
-            {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </Field>
+        <OwnerPicker key={`${l?.ownerId ?? ""}-${clients.length}`} clients={clients} value={l?.ownerId} />
         <Field label="Opiekun oferty">
           <select name="agentId" defaultValue={l?.agentId ?? me} className={input}>
             <option value="">—</option>
