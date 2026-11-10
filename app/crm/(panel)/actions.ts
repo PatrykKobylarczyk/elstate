@@ -100,7 +100,8 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
     year: int(f, "year"),
     description: opt(f, "description"),
     descriptionSections: sectionsFromForm((n) => str(f, n)),
-    features: str(f, "features").split(/[\n,]/).map((x) => x.trim()).filter(Boolean).slice(0, 30),
+    // jeden atut = jedna linia (przecinki zostają w treści); punktory na początku linii są usuwane
+    features: str(f, "features").split(/\r?\n/).map((x) => x.replace(/^\s*[-–•*]\s*/, "").trim()).filter(Boolean).slice(0, 30),
     images,
     featured: f.get("featured") === "on",
     ownerId: idOf(f, "ownerId"),

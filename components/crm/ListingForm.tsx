@@ -87,8 +87,8 @@ export default function ListingForm({ l, clients, team, me }: { l?: ListingRow; 
             <textarea name={`section_${s.key}`} rows={4} defaultValue={desc.sections[s.key] ?? ""} className={input} />
           </Field>
         ))}
-        <Field label="Atuty" hint="Każdy w nowej linii lub po przecinku, np. balkon, winda, komórka lokatorska.">
-          <textarea name="features" rows={3} defaultValue={l?.features.join("\n")} className={input} />
+        <Field label="Atuty" hint="Każdy atut w osobnej linii. Przecinki zostają w treści atutu.">
+          <textarea name="features" rows={6} defaultValue={l?.features.join("\n")} className={input} />
         </Field>
         <Field label="Adres strony oferty" hint={l ? `elstate.pl/oferty/${l.slug}` : "Tworzy się z tytułu. Możesz go zmienić."}>
           <input name="slug" defaultValue={l?.slug} placeholder="tworzy się z tytułu" className={input} />
