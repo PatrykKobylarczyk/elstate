@@ -91,13 +91,14 @@ function MapInner({
       if (hasPlaces(cats)) {
         setCategories(cats);
         setStatus("ok");
-        if (slug) fetch("/api/crm/okolica", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, categories: cats }) }).catch(() => {});
+        // zapis tylko z karty w CRM (dokładny adres); strona publiczna ma pinezkę przesuniętą
+        if (slug && detailsProp) fetch("/api/crm/okolica", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, categories: cats }) }).catch(() => {});
       } else setStatus(cats ? "ok" : "error");
     });
     return () => {
       alive = false;
     };
-  }, [hasData, details, slug, home.lat, home.lng, attempt]);
+  }, [hasData, details, detailsProp, slug, home.lat, home.lng, attempt]);
 
   useEffect(() => {
     let alive = true;

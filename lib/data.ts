@@ -23,7 +23,8 @@ export type Listing = {
   description?: string; // wstęp opisu
   descriptionSections?: DescriptionSections; // Lokalizacja, Budynek… (lib/description.ts)
   features?: string[];
-  street?: string;
+  street?: string; // tylko do wyznaczenia współrzędnych na serwerze, na stronie się nie wyświetla
+  approx?: { lat: number; lng: number }; // przybliżone położenie do mapy (lib/approx.ts)
   floorsTotal?: number;
   reserved?: boolean;
   agentEmail?: string; // opiekun oferty z CRM; strona dobiera po nim osobę z zespołu

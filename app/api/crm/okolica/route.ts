@@ -27,10 +27,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Złe współrzędne" }, { status: 400 });
   }
   const d = await db();
-  const [row] = slug ? await d.select({ id: listings.id, nearby: listings.nearby }).from(listings).where(eq(listings.slug, slug)) : [];
+  const [row] = slug ? await d.select({ id: listings.id, nearby: listings.nearby, lat: listings.lat, lng: listings.lng }).from(listings).where(eq(listings.slug, slug)) : [];
   if (hasPlaces(row?.nearby)) return NextResponse.json({ crm: true, categories: row.nearby }, { headers: noStore });
   const errors: string[] = [];
-  const categories = await fetchNearby({ lat, lng }, 20000, { headers: { "User-Agent": "elstate.pl (info@elstate.pl)" } }, errors);
+  // strona publiczna wysyła przybliżone położenie: okolicę liczymy od dokładnego punktu zapisanego przy ofercie
+  const home = row && row.lat != null && row.lng != null ? { lat: row.lat, lng: row.lng } : { lat, lng };
+  const categories = await fetchNearby(home, 20000, { headers: { "User-Agent": "elstate.pl (info@elstate.pl)" } }, errors);
   if (row && hasPlaces(categories)) await d.update(listings).set({ nearby: categories }).where(eq(listings.id, row.id));
   return NextResponse.json({ crm: true, categories: categories ?? [], errors }, { headers: noStore });
 }
