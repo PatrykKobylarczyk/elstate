@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { uploadPhoto } from "@/app/crm/(panel)/actions";
 
 // Zdjęcia oferty: dodawanie (zmniejszane w przeglądarce do 2400 px, potem wysyłane po jednym),
-// zmiana kolejności i usuwanie. Pierwsze zdjęcie to okładka na stronie. Lista trafia do formularza
+// zmiana kolejności (przeciąganiem myszką, na telefonie po przytrzymaniu palca) i usuwanie. Pierwsze zdjęcie to okładka na stronie. Lista trafia do formularza
 // w ukrytym polu „images”, więc zmiany zapisują się dopiero przyciskiem „Zapisz”.
 
 async function shrink(file: File): Promise<Blob> {
@@ -61,14 +61,98 @@ export default function PhotoManager({ initial, prefix }: { initial: string[]; p
       return y;
     });
 
+  // Przeciąganie: mysz od razu po ruszeniu o kilka px, dotyk po przytrzymaniu ~300 ms
+  // (żeby zwykłe przewijanie strony dalej działało). Kolejność zmienia się na żywo.
+  const [dragging, setDragging] = useState<string | null>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ src: string; id: number; x: number; y: number; active: boolean; timer?: ReturnType<typeof setTimeout> } | null>(null);
+
+  useEffect(() => {
+    // gdy przeciąganie palcem trwa, blokujemy przewijanie strony
+    const el = grid.current;
+    if (!el) return;
+    const stop = (e: TouchEvent) => {
+      if (drag.current?.active) e.preventDefault();
+    };
+    // puszczenie przycisku gdziekolwiek (także poza siatką) kończy przeciąganie
+    const finish = () => {
+      if (drag.current) clearTimeout(drag.current.timer);
+      drag.current = null;
+      setDragging(null);
+    };
+    el.addEventListener("touchmove", stop, { passive: false });
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    return () => {
+      el.removeEventListener("touchmove", stop);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+    };
+  }, []);
+
+  function start(e: React.PointerEvent, src: string) {
+    if (e.button !== 0 || (e.target as HTMLElement).closest("button")) return;
+    const d = { src, id: e.pointerId, x: e.clientX, y: e.clientY, active: false } as NonNullable<typeof drag.current>;
+    drag.current = d;
+    if (e.pointerType === "mouse") e.preventDefault(); // bez zaznaczania tekstu w trakcie
+    else {
+      d.timer = setTimeout(() => {
+        d.active = true;
+        setDragging(src);
+        navigator.vibrate?.(15);
+      }, 300);
+    }
+  }
+
+  function over(e: React.PointerEvent) {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.active) {
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6) return;
+      if (e.pointerType !== "mouse") {
+        // palec ruszył przed przytrzymaniem: to przewijanie, nie przeciąganie
+        clearTimeout(d.timer);
+        drag.current = null;
+        return;
+      }
+      d.active = true;
+      setDragging(d.src);
+    }
+    e.preventDefault();
+    const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-photo]");
+    const target = hit?.dataset.photo;
+    if (!target || target === d.src) return;
+    setImages((x) => {
+      const from = x.indexOf(d.src);
+      const to = x.indexOf(target);
+      if (from < 0 || to < 0) return x;
+      const y = [...x];
+      y.splice(from, 1);
+      y.splice(to, 0, d.src);
+      return y;
+    });
+  }
+
   return (
     <div>
       <input type="hidden" name="images" value={JSON.stringify(images)} />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div
+        ref={grid}
+        onPointerMove={over}
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+      >
         {images.map((src, i) => (
-          <figure key={src} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-mist">
+          <figure
+            key={src}
+            data-photo={src}
+            onPointerDown={(e) => start(e, src)}
+            onContextMenu={(e) => drag.current && e.preventDefault()}
+            className={`group relative aspect-[4/3] cursor-grab touch-manipulation overflow-hidden rounded-xl bg-mist select-none transition-[opacity,box-shadow,transform] ${
+              dragging === src ? "z-10 scale-[1.03] cursor-grabbing opacity-70 shadow-xl ring-2 ring-plum-700" : ""
+            }`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img src={src} alt="" draggable={false} className="pointer-events-none h-full w-full object-cover [-webkit-touch-callout:none]" loading="lazy" />
             {i === 0 && <span className="absolute top-2 left-2 rounded-full bg-plum-900 px-2 py-0.5 text-[11px] font-bold text-pearl">okładka</span>}
             <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/60 p-2">
               <div className="flex gap-1">
@@ -98,7 +182,7 @@ export default function PhotoManager({ initial, prefix }: { initial: string[]; p
       </div>
       <input ref={pick} type="file" accept="image/*" multiple hidden onChange={(e) => add(e.target.files)} />
       {error && <p className="mt-3 text-sm font-semibold text-red-800">{error}</p>}
-      <p className="mt-3 text-xs text-graphite/50">Zdjęcia zmniejszamy do 2400 px i usuwamy z nich dane GPS. Zmiany kolejności i usunięcia zapisują się przyciskiem „Zapisz”.</p>
+      <p className="mt-3 text-xs text-graphite/50">Zdjęcia zmniejszamy do 2400 px i usuwamy z nich dane GPS. Kolejność zmienisz, przeciągając zdjęcie (na telefonie przytrzymaj je palcem). Zmiany kolejności i usunięcia zapisują się przyciskiem „Zapisz”.</p>
     </div>
   );
 }
