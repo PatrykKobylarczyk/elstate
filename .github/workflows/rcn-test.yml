@@ -1,0 +1,30 @@
+name: RCN test
+# Sprawdzenie skryptu importu RCN na trzech małych powiatach i pustej bazie Postgres (przy zmianach skryptu).
+on:
+  pull_request:
+    paths: [.github/workflows/rcn-test.yml, scripts/rcn-import.mjs]
+concurrency: { group: rcn-test, cancel-in-progress: true }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      pg:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: pg }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:pg@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: node scripts/migrate.mjs
+      - run: node scripts/rcn-import.mjs 1003 1063 1010
+      - name: Sprawdzenie wyników
+        run: |
+          n=$(psql "$DATABASE_URL" -tAc "select count(*) from rcn_transakcje where cena_m2 is not null and gmina is not null")
+          echo "pozycji z ceną za m² i gminą: $n"; test "$n" -gt 1000
+          psql "$DATABASE_URL" -c "select powiat, rodzaj, count(*), count(cena_m2) m2, count(lat) geo, round(percentile_cont(0.5) within group (order by cena_m2)::numeric) med from rcn_transakcje group by 1,2 order by 1,2"
