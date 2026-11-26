@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { and, asc, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
-import { Badge, Empty, PageHead, btnGhost, input, listingTone, pln } from "@/components/crm/ui";
+import { ConfirmButton } from "@/components/crm/forms";
+import { Badge, Empty, PageHead, btnDanger, btnGhost, input, listingTone, pln } from "@/components/crm/ui";
 import { requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
 import { categoriesCrm, deals, label, listingStatuses } from "@/lib/crm/labels";
 import { listings, users } from "@/lib/crm/schema";
-import { importStarterListings, quickListingStatus } from "../actions";
+import { deleteListing, importStarterListings, quickListingStatus } from "../actions";
 
 export const metadata: Metadata = { title: "Oferty" };
 
@@ -63,8 +64,8 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<{
       {rows.length ? (
         <ul className="grid gap-3">
           {rows.map(({ l, agent }) => (
-            <li key={l.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-graphite/10 bg-white p-3 pr-4">
-              <Link href={`/crm/oferty/${l.id}`} className="flex min-w-0 flex-1 basis-80 items-center gap-4">
+            <li key={l.id} className="flex min-w-0 flex-wrap items-center gap-4 rounded-2xl border border-graphite/10 bg-white p-3 pr-4">
+              <Link href={`/crm/oferty/${l.id}`} className="flex min-w-0 flex-1 basis-64 items-center gap-4">
                 <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-mist">
                   {l.images[0] && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -89,6 +90,15 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<{
                 {l.status === "aktywna" && <button name="status" value="rezerwacja" className={btnGhost}>Rezerwacja</button>}
                 {(l.status === "aktywna" || l.status === "rezerwacja") && <button name="status" value="sprzedana" className={btnGhost}>Sprzedana</button>}
               </form>
+              <div className="flex items-center gap-2">
+                <Link href={`/crm/oferty/${l.id}/edycja`} className={btnGhost}>Edytuj</Link>
+                <form action={deleteListing}>
+                  <input type="hidden" name="id" value={l.id} />
+                  <ConfirmButton className={btnDanger} message={`Usunąć ofertę „${l.title}” razem ze zdjęciami? Tego nie da się cofnąć. (Zamiast tego możesz dać status „Archiwum”.)`}>
+                    Usuń
+                  </ConfirmButton>
+                </form>
+              </div>
             </li>
           ))}
         </ul>

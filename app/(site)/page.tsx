@@ -19,6 +19,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const region = await visitorRegion((await searchParams).panorama);
   const listings = await getListings();
   const featured = listings.find((l) => l.featured) ?? listings[0];
+  // na stronie głównej tylko kilka pierwszych ofert (kolejność z CRM), reszta na /oferty
+  const homeListings = listings.slice(0, 5);
   const stats = [
     { value: listings.length, label: "aktualnych ofert" },
     { value: process.length, label: "kroków do kluczy" },
@@ -126,7 +128,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
               </div>
               <Link href="/oferty" className="btn-ghost mt-10 self-start">Wszystkie oferty <Arrow /></Link>
             </div>
-            {listings.map((l) => (
+            {homeListings.map((l) => (
               <div key={l.slug} className="w-[78vw] shrink-0 md:w-[28vw]" data-cursor="Zobacz">
                 <ListingCard listing={l} />
               </div>

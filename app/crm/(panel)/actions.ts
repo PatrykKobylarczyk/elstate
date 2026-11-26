@@ -2,6 +2,7 @@
 
 import { and, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { hashPassword, log, randomPassword, requireUser } from "@/lib/crm/auth";
 import { db } from "@/lib/crm/db";
@@ -9,6 +10,8 @@ import { categoriesCrm, clientKinds, deals, leadStatuses, listingStatuses } from
 import { ingestNbot } from "@/lib/crm/leads";
 import { clients, leads, listings, notes, sessions, users } from "@/lib/crm/schema";
 import { removeImage, saveImage } from "@/lib/crm/storage";
+import { storeArea } from "@/lib/crm/area";
+import { sectionsFromForm } from "@/lib/description";
 
 type State = { error?: string; ok?: string } | undefined;
 
@@ -96,7 +99,9 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
     floorsTotal: int(f, "floorsTotal"),
     year: int(f, "year"),
     description: opt(f, "description"),
-    features: str(f, "features").split(/[\n,]/).map((x) => x.trim()).filter(Boolean).slice(0, 30),
+    descriptionSections: sectionsFromForm((n) => str(f, n)),
+    // jeden atut = jedna linia (przecinki zostają w treści); punktory na początku linii są usuwane
+    features: str(f, "features").split(/\r?\n/).map((x) => x.replace(/^\s*[-–•*]\s*/, "").trim()).filter(Boolean).slice(0, 30),
     images,
     featured: f.get("featured") === "on",
     ownerId: idOf(f, "ownerId"),
@@ -111,11 +116,15 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   }
   let oldSlug = "";
   let savedId = id;
+  let fetchArea = true;
   if (id) {
     const [old] = await d.select().from(listings).where(eq(listings.id, id));
     if (!old) return { error: "Oferta nie istnieje." };
     oldSlug = old.slug;
-    await d.update(listings).set(values).where(eq(listings.id, id));
+    const moved = old.street !== values.street || old.district !== values.district || old.city !== values.city;
+    fetchArea = moved || !old.nearby || old.lat == null;
+    // nowy adres: stare współrzędne i okolica nie pasują, pobierzemy je na nowo
+    await d.update(listings).set(moved ? { ...values, lat: null, lng: null, nearby: null } : values).where(eq(listings.id, id));
     for (const url of old.images) if (!images.includes(url)) await removeImage(url);
   } else {
     const [row] = await d.insert(listings).values(values).returning({ id: listings.id });
@@ -124,8 +133,10 @@ export async function saveListing(_: State, f: FormData): Promise<State> {
   // tylko jedna oferta wyróżniona na stronie głównej
   if (values.featured) await d.update(listings).set({ featured: false }).where(and(eq(listings.featured, true), ne(listings.id, savedId!)));
   await log("listing_saved", { userId: user.id, subject: slug, meta: { id: savedId, status } });
+  // współrzędne i okolica (szkoły, sklepy, zieleń…) pobierają się w tle po zapisie i zostają przy ofercie
+  if (fetchArea && savedId) after(() => storeArea(savedId!));
   refreshSite([slug, oldSlug]);
-  if (!id) redirect(`/crm/oferty/${savedId}?zapisano=1`);
+  if (!id) redirect(`/crm/oferty/${savedId}/edycja?zapisano=1`);
   return { ok: status === "aktywna" || status === "rezerwacja" ? "Zapisano. Oferta jest na stronie." : "Zapisano. Oferta nie jest widoczna na stronie (status: " + listingStatuses.find(([k]) => k === status)?.[1].toLowerCase() + ")." };
 }
 
@@ -152,7 +163,7 @@ export async function quickListingStatus(f: FormData) {
   if (status === "aktywna" || status === "rezerwacja") {
     const [cur] = await d.select().from(listings).where(eq(listings.id, id));
     // niekompletnej oferty nie publikujemy z listy; edytor pokaże, czego brakuje
-    if (!cur?.price || !cur.area || !cur.district) redirect(`/crm/oferty/${id}`);
+    if (!cur?.price || !cur.area || !cur.district) redirect(`/crm/oferty/${id}/edycja`);
   }
   const [row] = await d.update(listings).set({ status, updatedAt: new Date() }).where(eq(listings.id, id)).returning({ slug: listings.slug });
   await log("listing_saved", { userId: user.id, subject: row?.slug, meta: { id, status } });
@@ -282,7 +293,7 @@ export async function leadToListing(f: FormData) {
     .returning({ id: listings.id });
   await d.update(leads).set({ listingId: row.id, status: "pozyskany", updatedAt: new Date() }).where(eq(leads.id, id));
   await log("listing_saved", { userId: user.id, subject: String(row.id), meta: { fromLead: id } });
-  redirect(`/crm/oferty/${row.id}`);
+  redirect(`/crm/oferty/${row.id}/edycja`);
 }
 
 // ——— Notatki ———
@@ -395,6 +406,7 @@ export async function importStarterListings() {
       floorsTotal: s.floorsTotal ?? null,
       street: s.street ?? null,
       description: s.description ?? null,
+      descriptionSections: s.descriptionSections ?? null,
       features: s.features ?? [],
       images: s.images?.length ? s.images : s.image ? [s.image] : [],
       featured: Boolean(s.featured),
