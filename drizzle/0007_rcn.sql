@@ -1,4 +1,5 @@
-CREATE TABLE "rcn_transakcje" (
+-- IF NOT EXISTS: tabela mogła już powstać z wcześniejszej wersji tej migracji (0004_rcn z podglądu PR #7 na tej samej bazie)
+CREATE TABLE IF NOT EXISTS "rcn_transakcje" (
 	"id" text PRIMARY KEY NOT NULL,
 	"rodzaj" text NOT NULL,
 	"teryt_powiat" text NOT NULL,
@@ -22,6 +23,8 @@ CREATE TABLE "rcn_transakcje" (
 	"imported_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX "rcn_rodzaj_data_idx" ON "rcn_transakcje" USING btree ("rodzaj","data");--> statement-breakpoint
-CREATE INDEX "rcn_powiat_idx" ON "rcn_transakcje" USING btree ("teryt_powiat","data");--> statement-breakpoint
-CREATE INDEX "rcn_miejscowosc_idx" ON "rcn_transakcje" USING btree ("miejscowosc");
+CREATE INDEX IF NOT EXISTS "rcn_rodzaj_data_idx" ON "rcn_transakcje" USING btree ("rodzaj","data");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "rcn_powiat_idx" ON "rcn_transakcje" USING btree ("teryt_powiat","data");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "rcn_miejscowosc_idx" ON "rcn_transakcje" USING btree ("miejscowosc");--> statement-breakpoint
+ALTER TABLE "rcn_transakcje" ADD COLUMN IF NOT EXISTS "pow_dzialki" real;--> statement-breakpoint
+ALTER TABLE "rcn_transakcje" ADD COLUMN IF NOT EXISTS "uwagi" text;
