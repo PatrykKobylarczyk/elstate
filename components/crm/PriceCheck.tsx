@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cenyOkolicy } from "@/app/crm/(panel)/actions";
-import type { Grupa } from "@/lib/crm/porownanie";
+import type { Porownanie } from "@/lib/crm/porownanie";
 
 // Cena za m² oferty na tle cen transakcyjnych z RCN (ulica, 1 km, dzielnica, miasto).
 // W formularzu czyta pola na bieżąco: cena i metraż przeliczają się od razu, a po zmianie adresu
@@ -41,7 +41,8 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
   const [price, setPrice] = useState(start.price);
   const [area, setArea] = useState(start.area);
   const [loc, setLoc] = useState<Loc>({ category: start.category, city: start.city, district: start.district, street: start.street });
-  const [groups, setGroups] = useState<Grupa[] | null>(null);
+  const [data, setData] = useState<Porownanie | null>(null);
+  const groups = data?.groups ?? null;
 
   // pola formularza oferty: nasłuch na całym formularzu, bez przerabiania pól na kontrolowane
   useEffect(() => {
@@ -69,13 +70,13 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
 
   useEffect(() => {
     let stop = false;
-    setGroups(null);
+    setData(null);
     // zapisane współrzędne pasują tylko do zapisanego adresu
     const same = loc.city === start.city && loc.district === start.district && loc.street === start.street;
     const timer = setTimeout(() => {
       cenyOkolicy({ ...loc, lat: same ? start.lat : null, lng: same ? start.lng : null })
-        .then((g) => !stop && setGroups(g))
-        .catch(() => !stop && setGroups([]));
+        .then((r) => !stop && setData(r))
+        .catch(() => !stop && setData({ groups: [], trend: null }));
     }, 600);
     return () => {
       stop = true;
@@ -153,13 +154,24 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
                   <span>
                     połowa transakcji: {Math.round(g.q[5]).toLocaleString("pl-PL")}–{zl(g.q[15])}
                   </span>
-                  <span>{g.n} transakcji od {new Date(`${g.od}T12:00:00Z`).toLocaleDateString("pl-PL", { month: "short", year: "numeric" })}</span>
+                  <span>{g.n} transakcji od {new Date(`${g.od}T12:00:00Z`).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })} ({g.months} mies.)</span>
                 </div>
               </div>
             );
           })}
         </div>
         <p className="mt-5 text-xs leading-relaxed text-graphite/45">
+          {data?.trend ? (
+            <>
+              Ceny urealnione do dziś: starsze transakcje przeliczone według kwartalnego trendu cen w mieście {data.trend.scope}
+              {data.trend.pct12 !== null && (
+                <> ({data.trend.pct12 > 0 ? "+" : ""}{data.trend.pct12.toLocaleString("pl-PL")}% w ostatnim roku)</>
+              )}
+              . Liczymy z ostatnich 6 miesięcy, a z 12 miesięcy lub 2 lat tylko wtedy, gdy transakcji jest za mało.{" "}
+            </>
+          ) : (
+            <>Ceny bez urealnienia (za mało transakcji w mieście, żeby policzyć trend). </>
+          )}
           Ciemny pasek: środkowa połowa transakcji (25–75%), jasny: 10–90%, kreska: mediana, złota kropka: ta oferta. Ceny z aktów notarialnych (RCN), bez udziałów i sprzedaży
           z bonifikatą. Kliknij nazwę, żeby otworzyć szczegóły w Cenach transakcyjnych.
         </p>
