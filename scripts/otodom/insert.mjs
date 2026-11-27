@@ -11,11 +11,8 @@ const sql = postgres(url, { max: 1, ssl: "require" });
 const L = data.listing;
 
 const exists = await sql`select id, slug, status from listings where slug = ${L.slug} or internal_notes like ${"%" + data.source + "%"}`;
-if (exists.length) {
-  console.log("Oferta już jest:", exists);
-  await sql.end();
-  process.exit(0);
-}
+const already = exists.length > 0;
+if (already) console.log("Oferta już jest:", exists);
 
 const images = [];
 const r = await fetch(data.photo, { headers: { "user-agent": "Mozilla/5.0" } });
@@ -42,6 +39,10 @@ if (r.ok) {
   } else console.log("Brak BLOB_READ_WRITE_TOKEN: zdjęcie tylko jako artefakt workflow");
 }
 
+if (already) {
+  await sql.end();
+  process.exit(0);
+}
 const [row] = await sql`
   insert into listings (slug, status, title, deal, category, city, district, street, price, area, rooms, floor, floors_total, year,
     description, description_sections, features, images, lat, lng, internal_notes)
