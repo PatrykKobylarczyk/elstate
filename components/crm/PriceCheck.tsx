@@ -149,10 +149,11 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
                     </div>
                   )}
                 </div>
-                <div className="mt-1 flex justify-between text-xs tabular-nums text-graphite/45">
-                  <span>{zl(g.q[5])}</span>
+                <div className="mt-1 flex flex-wrap justify-between gap-x-4 text-xs tabular-nums text-graphite/45">
+                  <span>
+                    połowa transakcji: {Math.round(g.q[5]).toLocaleString("pl-PL")}–{zl(g.q[15])}
+                  </span>
                   <span>{g.n} transakcji od {new Date(`${g.od}T12:00:00Z`).toLocaleDateString("pl-PL", { month: "short", year: "numeric" })}</span>
-                  <span>{zl(g.q[15])}</span>
                 </div>
               </div>
             );
