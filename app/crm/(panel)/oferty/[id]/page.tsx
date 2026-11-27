@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import Notes from "@/components/crm/Notes";
+import PriceCheck from "@/components/crm/PriceCheck";
 import { ConfirmButton } from "@/components/crm/forms";
 import LocationMap from "@/components/offer/LocationMap";
 import { Badge, PageHead, btnDanger, btnGhost, card, listingTone, pln, when } from "@/components/crm/ui";
@@ -88,6 +89,11 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
               ))}
             </dl>
           </section>
+          {l.deal === "sprzedaz" && (
+            <PriceCheck
+              start={{ deal: l.deal, category: l.category, city: l.city, district: l.district, street: l.street ?? "", lat: l.lat, lng: l.lng, price: l.price, area: l.area }}
+            />
+          )}
           {(text.intro.length > 0 || text.blocks.length > 0 || l.features.length > 0) && (
             <section className={card}>
               <h2 className="mb-3 font-display text-xl text-plum-900">Opis</h2>

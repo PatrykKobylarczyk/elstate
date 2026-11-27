@@ -11,6 +11,7 @@ import { ingestNbot } from "@/lib/crm/leads";
 import { clients, leads, listings, notes, sessions, users } from "@/lib/crm/schema";
 import { removeImage, saveImage } from "@/lib/crm/storage";
 import { storeArea } from "@/lib/crm/area";
+import { porownaj, type Grupa, type Miejsce } from "@/lib/crm/porownanie";
 import { sectionsFromForm } from "@/lib/description";
 
 type State = { error?: string; ok?: string } | undefined;
@@ -63,6 +64,19 @@ export async function uploadPhoto(f: FormData): Promise<{ url?: string; error?: 
     return { url: await saveImage(file, (slugify(str(f, "prefix"))) || "oferta") };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Nie udało się zapisać zdjęcia." };
+  }
+}
+
+// cena oferty na tle transakcji z okolicy (formularz oferty pyta po zmianie adresu albo rodzaju)
+export async function cenyOkolicy(m: Miejsce): Promise<Grupa[]> {
+  await requireUser();
+  const clip = (v: unknown) => String(v ?? "").slice(0, 120);
+  const coord = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  try {
+    return await porownaj({ category: clip(m.category), city: clip(m.city), district: clip(m.district), street: clip(m.street), lat: coord(m.lat), lng: coord(m.lng) });
+  } catch (e) {
+    console.error("[ceny okolicy]", e);
+    return [];
   }
 }
 
