@@ -1,0 +1,17 @@
+# Jednorazowy import ogłoszenia z Otodom jako szkic oferty w CRM (uruchamia się przy pushu tej gałęzi).
+name: Otodom szkic
+on:
+  push:
+    branches: [claude/project-thread-3a1x9k]
+    paths: [scripts/otodom/**, .github/workflows/otodom-szkic.yml]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pobierz ogłoszenie
+        run: node scripts/otodom/fetch.mjs "https://www.otodom.pl/pl/oferta/komfortowe-96-9m-parter-ogrodek-zamkniete-osiedle-3-pokoje-garaz-ID4E0HQ"
