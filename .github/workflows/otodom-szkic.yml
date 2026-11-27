@@ -7,11 +7,22 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Pobierz ogłoszenie
-        run: node scripts/otodom/fetch.mjs "https://www.otodom.pl/pl/oferta/komfortowe-96-9m-parter-ogrodek-zamkniete-osiedle-3-pokoje-garaz-ID4E0HQ"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Dodaj szkic oferty
+        run: node scripts/otodom/insert.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zdjecie
+          path: zdjecie.webp
+          if-no-files-found: ignore
