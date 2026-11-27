@@ -355,3 +355,6 @@ body:has(form[data-pending]) [data-results] { opacity: 0.45; }
 }
 /* wybór pozycji: menu znika od razu, bez zwijania okręgu */
 .menu-panel[data-instant], .menu-panel[data-instant] * { transition: none !important; }
+
+/* mapa cen w CRM: szare tło, żeby kolory punktów niosły informację */
+.rcn-tiles { filter: grayscale(1) brightness(1.06) contrast(0.9); }

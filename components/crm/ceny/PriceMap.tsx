@@ -28,9 +28,12 @@ export default function PriceMap({ points }: { points: Punkt[] }) {
       const L = (await import("leaflet")).default;
       if (cancelled || !el.current) return;
       map = L.map(el.current, { preferCanvas: true, scrollWheelZoom: false, attributionControl: true });
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      // kafelki OSM jak na mapie okolicy w ofercie (CARTO wymaga teraz klucza); przygaszone, żeby kolorowe punkty były czytelne
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · RCN: GUGiK',
+        subdomains: "abc",
+        className: "rcn-tiles",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · RCN: GUGiK',
       }).addTo(map);
       const renderer = L.canvas({ padding: 0.3 });
       const color = (m2: number | null) => (m2 === null || !breaks.length ? NO_PRICE : COLORS[breaks.filter((b) => m2 > b).length]);
