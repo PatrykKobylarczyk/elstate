@@ -76,7 +76,7 @@ export default async function Oferta({ params }: { params: Promise<{ id: string 
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
           <section className={card}>
             <h2 className="mb-3 font-display text-xl text-plum-900">Dane oferty</h2>

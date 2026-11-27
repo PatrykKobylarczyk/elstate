@@ -226,9 +226,9 @@ export default async function Ceny({ searchParams }: { searchParams: Promise<Rec
       <section>
         <h2 className="mb-3 font-semibold">Transakcje</h2>
         {list.length ? (
-          <ul className="grid gap-2">
+          <ul className="grid grid-cols-1 gap-2">
             {list.map((r) => (
-              <li key={r.id} className="grid gap-x-4 gap-y-1 rounded-2xl border border-graphite/10 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]">
+              <li key={r.id} className="grid grid-cols-1 gap-x-4 gap-y-1 rounded-2xl border border-graphite/10 bg-white px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">
                     {[r.ulica && `${r.ulica} ${r.numer ?? ""}`.trim(), r.miejscowosc ?? r.gmina].filter(Boolean).join(", ") || r.powiat}

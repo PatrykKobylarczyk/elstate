@@ -41,7 +41,7 @@ export default async function Lead({ params }: { params: Promise<{ id: string }>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
           <ActionForm key={`${l.status}-${l.assignedTo}`} action={updateLead} className={`${card} grid gap-4 md:grid-cols-2`}>
             <input type="hidden" name="id" value={l.id} />

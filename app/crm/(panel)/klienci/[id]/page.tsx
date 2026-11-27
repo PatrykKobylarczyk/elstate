@@ -32,7 +32,7 @@ export default async function Klient({ params }: { params: Promise<{ id: string 
         {c.phone && <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="inline-flex rounded-full bg-plum-900 px-5 py-2.5 text-sm font-semibold text-pearl hover:bg-plum-700">Zadzwoń {c.phone}</a>}
         {c.email && <a href={`mailto:${c.email}`} className={btnGhost}>Napisz</a>}
       </PageHead>
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
           <ClientForm c={c} />
           <section className={card}>

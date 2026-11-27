@@ -63,7 +63,7 @@ export default async function Pulpit() {
         </Link>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section className={card}>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-xl text-plum-900">Do kontaktu</h2>

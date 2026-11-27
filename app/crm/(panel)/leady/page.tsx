@@ -82,7 +82,7 @@ export default async function Leady({ searchParams }: { searchParams: Promise<{ 
       </form>
 
       {rows.length ? (
-        <ul className="grid gap-2">
+        <ul className="grid grid-cols-1 gap-2">
           {rows.map(({ l, who }) => (
             <li key={l.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-graphite/10 bg-white p-4">
               <Link href={`/crm/leady/${l.id}`} className="min-w-0 flex-1 basis-72">
