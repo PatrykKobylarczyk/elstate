@@ -5,6 +5,7 @@ import { DESCRIPTION_SECTIONS, formDescription } from "@/lib/description";
 import type { ListingRow } from "@/lib/crm/schema";
 import { ActionForm, Submit } from "./forms";
 import PhotoManager from "./PhotoManager";
+import PriceCheck from "./PriceCheck";
 import { Field, card, input } from "./ui";
 
 type Opt = { id: number; name: string };
@@ -66,6 +67,21 @@ export default function ListingForm({ l, clients, team, me }: { l?: ListingRow; 
           Wyróżniona na stronie głównej
         </label>
       </section>
+
+      <PriceCheck
+        live
+        start={{
+          deal: l?.deal ?? "sprzedaz",
+          category: l?.category ?? "mieszkania",
+          city: l?.city ?? "Łódź",
+          district: l?.district ?? "",
+          street: l?.street ?? "",
+          lat: l?.lat,
+          lng: l?.lng,
+          price: l?.price ?? 0,
+          area: l?.area ?? 0,
+        }}
+      />
 
       <section className={card}>
         <h2 className="mb-4 font-display text-xl text-plum-900">Zdjęcia</h2>
