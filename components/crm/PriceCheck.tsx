@@ -154,7 +154,7 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
                   <span>
                     połowa transakcji: {Math.round(g.q[5]).toLocaleString("pl-PL")}–{zl(g.q[15])}
                   </span>
-                  <span>{g.n} transakcji od {new Date(`${g.od}T12:00:00Z`).toLocaleDateString("pl-PL", { month: "short", year: "numeric" })}</span>
+                  <span>{g.n} transakcji od {new Date(`${g.od}T12:00:00Z`).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })} ({g.months} mies.)</span>
                 </div>
               </div>
             );
@@ -167,7 +167,7 @@ export default function PriceCheck({ start, live = false }: { start: Start; live
               {data.trend.pct12 !== null && (
                 <> ({data.trend.pct12 > 0 ? "+" : ""}{data.trend.pct12.toLocaleString("pl-PL")}% w ostatnim roku)</>
               )}
-              . Okno to 12 miesięcy, dłuższe tylko gdy transakcji jest za mało.{" "}
+              . Liczymy z ostatnich 6 miesięcy, a z 12 miesięcy lub 2 lat tylko wtedy, gdy transakcji jest za mało.{" "}
             </>
           ) : (
             <>Ceny bez urealnienia (za mało transakcji w mieście, żeby policzyć trend). </>

@@ -9,16 +9,16 @@ import { rcnTransakcje as t } from "./schema";
 //
 // Ceny rosną, więc starsze transakcje przeliczamy na dzisiejsze: indeks to kwartalna mediana zł/m² w mieście
 // (wygładzona średnią z sąsiednich kwartałów), a transakcja z kwartału K dostaje mnożnik indeks(dziś) / indeks(K).
-// Okno to 12 miesięcy; dłuższe (24, potem 36) tylko gdy w krótszym jest za mało transakcji.
+// Okno to 6 miesięcy; dłuższe (12, potem 24) tylko gdy w krótszym jest za mało transakcji.
 
 export type Miejsce = { category: string; city: string; district: string; street: string; lat?: number | null; lng?: number | null };
-export type Grupa = { key: string; label: string; n: number; q: number[]; od: string; ceny: string };
+export type Grupa = { key: string; label: string; n: number; q: number[]; od: string; months: number; ceny: string };
 export type Trend = { scope: string; pct12: number | null; asOf: string };
 export type Porownanie = { groups: Grupa[]; trend: Trend | null };
 
 const RODZAJ: Record<string, string> = { mieszkania: "mieszkanie", domy: "dom", dzialki: "dzialka", lokale: "lokal" };
 const STEPS = Array.from({ length: 21 }, (_, i) => i / 20);
-const WINDOWS = [12, 24, 36];
+const WINDOWS = [6, 12, 24];
 const ENOUGH = 10; // tyle transakcji wystarcza, żeby nie wydłużać okna
 const MIN = 5; // mniej nie pokazujemy wcale
 const QUARTER_MIN = 15; // kwartał do indeksu musi mieć tyle transakcji
@@ -110,7 +110,7 @@ export async function porownaj(m: Miejsce): Promise<Porownanie> {
       const last = months === WINDOWS[WINDOWS.length - 1];
       if (n >= ENOUGH || (last && n >= MIN)) {
         const q = (typeof r.q === "string" ? JSON.parse(String(r.q).replace(/^\{/, "[").replace(/\}$/, "]")) : (r.q as number[])).map(Number);
-        return { key, label, n, q, od, ceny: cenyLink({ rodzaj, od: od.slice(0, 7), ...ceny }) };
+        return { key, label, n, q, od, months, ceny: cenyLink({ rodzaj, od: od.slice(0, 7), ...ceny }) };
       }
     }
     return null;
