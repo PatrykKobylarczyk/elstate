@@ -62,7 +62,7 @@ export default async function Oferty({ searchParams }: { searchParams: Promise<{
       )}
 
       {rows.length ? (
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-1 gap-3">
           {rows.map(({ l, agent }) => (
             <li key={l.id} className="flex min-w-0 flex-wrap items-center gap-4 rounded-2xl border border-graphite/10 bg-white p-3 pr-4">
               <Link href={`/crm/oferty/${l.id}`} className="flex min-w-0 flex-1 basis-64 items-center gap-4">
